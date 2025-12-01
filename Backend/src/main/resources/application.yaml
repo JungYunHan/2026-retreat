@@ -1,0 +1,115 @@
+# ==================================
+# 1. 공통 설정 (모든 환경에서 사용)
+# ==================================
+spring:
+  application:
+    name: smy-winter-2026
+  
+  # [사용자 일괄 등록/업데이트 방법]
+  # 1. 아래 active 값을 'import,dev' 로 변경합니다.
+  # 2. src/main/resources/user-data.xlsx 파일을 사용자 정보로 채웁니다.
+  # 3. 애플리케이션을 실행하면 엑셀 내용이 DB에 반영됩니다.
+  # 4. 작업 완료 후, 반드시 아래 active 값을 다시 'dev'로 되돌려 놓으세요.
+  #    (그렇지 않으면 실행할 때마다 사용자를 계속 추가하려고 시도합니다.)
+  # 기본으로 활성화할 프로필을 'dev' (개발용)로 지정
+  profiles:
+    active: dev
+  
+  # 정적 리소스 경로 설정
+  web:
+    resources:
+      # 기본 경로에 커스텀 경로('classpath:/custom-static/')를 추가합니다.
+      # 참고: 이 속성을 사용하면 기본 경로가 오버라이드되므로, 기본 경로도 함께 명시해야 합니다.
+      static-locations: classpath:/static/, classpath:/public/, classpath:/custom-static/
+
+--- 
+# --- (YAML 문서 분리 기호) ---
+
+# ==================================
+# 2. 'dev' 프로필 (개발 환경: H2)
+# (spring.profiles.active=dev 일 때 활성화)
+# ==================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  # JWT 설정 (dev 프로필)
+  jwt:
+    secret: your-very-secret-key-that-is-long-enough-to-be-secure-smy-winter-2026-dev
+    expiration-ms: 3600000 # 1시간
+
+  # PostgreSQL Datasource (개발용)
+  datasource:
+    url: ${DB_URL} # 환경 변수에서 DB URL을 가져옴
+    username: ${DB_USERNAME} # 환경 변수에서 사용자 이름을 가져옴
+    password: ${DB_PASSWORD} # 환경 변수에서 비밀번호를 가져옴
+    driver-class-name: org.postgresql.Driver
+
+  # H2 Console (PostgreSQL 사용 시 불필요하므로 비활성화)
+  h2:
+    console:
+      enabled: false
+
+  # JPA (PostgreSQL용)
+  jpa:
+    hibernate:
+      ddl-auto: update # 개발 시 테이블 자동 생성/변경
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  # Thymeleaf (개발용)
+  thymeleaf:
+    cache: false # Thymeleaf 템플릿 캐시 비활성화 (수정 시 바로 반영)
+  
+  # 정적 리소스 캐시 비활성화 (개발용)
+  web:
+    resources:
+      cache:
+        period: 0 # 브라우저가 CSS, JS 등을 캐시하지 않도록 설정
+
+---
+# --- (YAML 문서 분리 기호) ---
+
+# ==================================
+# 3. 'prod' 프로필 (운영 환경: PostgreSQL)
+# (spring.profiles.active=prod 일 때 활성화)
+# ==================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  # JWT 설정 (prod 프로필)
+  jwt:
+    secret: ${JWT_SECRET} # [중요] 운영 환경에서는 환경 변수에서 비밀키를 가져옴
+    expiration-ms: 3600000 # 1시간
+
+  # Render 환경 변수(PORT)를 사용하도록 서버 포트 설정
+  server:
+    port: ${PORT:8080}
+
+  # PostgreSQL Datasource
+  datasource:
+    url: ${DB_URL} # 환경 변수에서 DB URL을 가져옴
+    username: ${DB_USERNAME} # 환경 변수에서 사용자 이름을 가져옴
+    password: ${DB_PASSWORD} # 환경 변수에서 비밀번호를 가져옴
+    driver-class-name: org.postgresql.Driver
+
+  # H2 Console (운영 환경에서는 비활성화)
+  h2:
+    console:
+      enabled: false
+
+  # JPA (PostgreSQL용)
+  jpa:
+    hibernate:
+      ddl-auto: validate # [중요] 운영에서는 자동 변경(update) 대신 검증(validate)
+    show-sql: false # 운영에서는 SQL 로그 비활성화 (성능)
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect

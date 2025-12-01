@@ -1,0 +1,101 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.0' // 안정적인 정식 버전으로 변경
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.smgp'
+version = '0.0.1-SNAPSHOT'
+description = '2026 선목젊은이 겨울 동계수련회 프로젝트 '
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+	maven { url = 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// JWT (JSON Web Token) 라이브러리
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	// 엑셀 파일(.xlsx) 처리를 위한 Apache POI 라이브러리 추가
+	implementation 'org.apache.poi:poi-ooxml:5.2.5'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.postgresql:postgresql'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// ===================================================
+// Next.js 빌드 통합 스크립트
+// ===================================================
+
+def frontendDir = "$projectDir/src/main/frontEnd"
+
+sourceSets {
+	main {
+		resources { srcDirs = ["$projectDir/src/main/resources"] }
+	}
+}
+
+processResources { dependsOn "copyFrontendToBuild" }
+
+// 1. npm install
+task installFrontend(type: Exec) {
+	workingDir "$frontendDir"
+	inputs.dir "$frontendDir"
+	group = BasePlugin.BUILD_GROUP
+	if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+		commandLine "npm.cmd", "audit", "fix"
+		commandLine 'npm.cmd', 'install'
+	} else {
+		commandLine "npm", "audit", "fix"
+		commandLine 'npm', 'install'
+	}
+}
+
+// 2. npm run build
+task buildFrontend(type: Exec) {
+	dependsOn "installFrontend"
+	workingDir "$frontendDir"
+	inputs.dir "$frontendDir"
+	group = BasePlugin.BUILD_GROUP
+	if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+		commandLine "npm.cmd", "run-script", "build"
+	} else {
+		commandLine "npm", "run-script", "build"
+	}
+}
+
+// 3. 빌드 결과물(out 폴더)을 Spring Boot static 폴더로 복사
+task copyFrontendToBuild(type: Copy) {
+	dependsOn "buildFrontend"
+	from "$frontendDir/out"
+	into "$projectDir/src/main/resources/static"
+}

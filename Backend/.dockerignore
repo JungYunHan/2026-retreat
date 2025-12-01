@@ -1,0 +1,9 @@
+# Gradle build cache
+.gradle
+
+# Build output folder
+build
+
+# IDE-specific files
+.idea
+*.iml

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default_layout}">
+
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>커뮤니티 게시판</h1>
+        <a th:href="@{/community/write}" class="btn btn-primary">
+            <i class="bi bi-pencil-square"></i> 글쓰기
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                <!-- 실제 DB 데이터를 사용하여 반복 처리 -->
+                <li th:each="post : ${posts}" class="list-group-item list-group-item-action">
+                    <a th:href="@{/post/{id}(id=${post.id})}" class="text-decoration-none text-body">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1" th:text="${post.title}">게시글 제목</h5>
+                            <!-- 날짜 포맷팅 (예: 2025-11-22) -->
+                            <small class="text-muted" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">작성일</small>
+                        </div>
+                        <p class="mb-1 text-truncate" th:text="${post.content}">게시글 내용의 일부가 여기에 표시됩니다.</p>
+                        <small class="text-muted">
+                            <span th:text="${post.user.name}">작성자</span>
+                            &middot;
+                            <i class="bi bi-chat-dots"></i> <span th:text="${#lists.size(post.comments)}">0</span>
+                        </small>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- TODO: 페이지네이션 구현 -->
+</div>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default_layout}">
+
+<th:block layout:fragment="css">
+    <style>
+        /* 알약 형태의 탭 디자인으로 변경 */
+        #scheduleTab .nav-link {
+            color: #6c757d; /* 비활성 탭 글자색 */
+            background-color: #e9ecef; /* 비활성 탭 배경색 */
+            margin: 0 5px;
+            font-weight: 500;
+        }
+        #scheduleTab .nav-link.active {
+            color: #fff; /* 활성 탭 글자색 */
+            background-color: #F57C00; /* 활성 탭 배경색 (대표 색상) */
+        }
+
+        /* 타임라인 스타일 */
+        .timeline {
+            position: relative;
+            padding-left: 4.5rem; /* 시간 표시 영역 확보 */
+            margin: 1rem 0;
+            list-style: none;
+        }
+        .timeline:before {
+            content: '';
+            position: absolute;
+            left: 1.5rem; /* 아이콘 위치와 맞춤 */
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .timeline-time {
+            position: absolute;
+            left: 0;
+            top: 0.1rem;
+            width: 3rem;
+            text-align: right;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: -3rem; /* (4.5rem - 1.5rem) */
+            top: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #fff;
+            border: 2px solid #F57C00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timeline-content {
+            background-color: #fff;
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem; /* 둥근 모서리 */
+            border: 1px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 그림자 효과 */
+            position: relative;
+        }
+    </style>
+</th:block>
+<div layout:fragment="content">
+    <!-- 날짜별 탭 네비게이션 -->
+    <ul class="nav nav-pills nav-fill mb-4" id="scheduleTab" role="tablist">
+        <!-- schedulesByDay 맵에 키(날짜)가 존재하는지 확인하고 탭을 동적으로 생성 -->
+        <li class="nav-item" role="presentation" th:each="day : ${schedulesByDay.keySet().stream().sorted().toList()}">
+            <button th:classappend="${day == 1} ? 'active'" class="nav-link" th:id="'day' + ${day} + '-tab'"
+                    data-bs-toggle="tab" th:data-bs-target="'#day' + ${day}" type="button" role="tab"
+                    th:aria-controls="'day' + ${day}" th:aria-selected="${day == 1}" th:text="${day} + '일차'">
+            </button>
+        </li>
+    </ul>
+
+    <!-- 탭 콘텐츠 -->
+    <div class="tab-content" id="scheduleTabContent">
+        <!-- 날짜별 탭 패널을 동적으로 생성 -->
+        <div th:each="day : ${schedulesByDay.keySet().stream().sorted().toList()}"
+             th:classappend="${day == 1} ? 'show active'" class="tab-pane fade" th:id="'day' + ${day}"
+             role="tabpanel" th:aria-labelledby="'day' + ${day} + '-tab'">
+
+            <ul class="timeline">
+                <!-- 해당 날짜의 일정 목록을 반복하여 표시 -->
+                <li th:each="schedule : ${schedulesByDay.get(day)}" class="timeline-item">
+                    <div class="timeline-time" th:text="${#temporals.format(schedule.startTime, 'HH:mm')}">00:00</div>
+                    <div class="timeline-icon">
+                        <i class="bi bi-circle-fill" style="font-size: 0.6rem; color: #F57C00;"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1" th:text="${schedule.title}">일정 제목</h5>
+                            <small class="text-muted" th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}">00:00 - 00:00</small>
+                        </div>
+                        <p class="mb-1" th:text="${schedule.description}">일정 상세 설명입니다.</p>
+                        <small class="text-muted" th:if="${schedule.location != null}">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span th:text="${schedule.location}">장소</span>
+                        </small>
+                    </div>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+
+    <!-- 일정이 하나도 없을 경우 메시지 표시 -->
+    <div th:if="${schedulesByDay == null or schedulesByDay.isEmpty()}" class="card text-center">
+        <div class="card-body">
+            <p class="card-text">아직 등록된 수련회 일정이 없습니다.</p>
+        </div>
+    </div>
+
+</div>
+</html>

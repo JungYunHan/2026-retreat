@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default_layout}">
+
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>차량 배정 결과</h1>
+    </div>
+
+    <!-- 배정 결과가 있을 경우 -->
+    <div class="row row-cols-1 row-cols-md-2 g-4" th:if="${!assignmentsByVehicle.isEmpty()}">
+        <!-- 차량(Vehicle) 별로 카드 생성 -->
+        <div class="col" th:each="entry : ${assignmentsByVehicle}">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0" th:text="${entry.key.name}">차량 이름 (1호차)</h5>
+                    <div class="small text-muted">
+                        <span th:if="${entry.key.driverName}" th:text="'기사님: ' + ${entry.key.driverName}">기사님 성함</span>
+                        <span th:if="${entry.key.driverPhone}" th:text="' (' + ${entry.key.driverPhone} + ')'"> (연락처)</span>
+                    </div>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <!-- 배정된 사용자 목록 표시 -->
+                    <li th:each="assignment : ${entry.value}" class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span th:text="${assignment.user.name}">사용자 이름</span>
+                            <small class.text-muted th:text="'(' + ${assignment.user.teamName} + ')'">(소속 조)</small>
+                        </div>
+                        <span th:if="${assignment.isVehicleLeader}" class="badge bg-success rounded-pill">⭐ 차량장</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 배정 결과가 없을 경우 -->
+    <div th:if="${assignmentsByVehicle.isEmpty()}" class="card text-center">
+        <div class="card-body">
+            <p class="card-text">아직 차량 배정 결과가 발표되지 않았습니다.</p>
+        </div>
+    </div>
+</div>
+</html>
