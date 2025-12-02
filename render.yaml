@@ -1,0 +1,38 @@
+services:
+  # Spring Boot Backend + Next.js Static Frontend
+  - type: web
+    name: smy-winter-2026
+    runtime: docker
+    region: oregon
+    plan: free
+    branch: main
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        fromDatabase:
+          name: smy-winter-2026-db
+          property: connectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: smy-winter-2026-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: smy-winter-2026-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION_MS
+        value: 3600000
+    healthCheckPath: /
+    autoDeploy: true
+
+databases:
+  - name: smy-winter-2026-db
+    databaseName: smy_winter_db
+    user: smy_user
+    region: oregon
+    plan: free
