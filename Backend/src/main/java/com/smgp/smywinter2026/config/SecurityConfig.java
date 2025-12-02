@@ -47,12 +47,25 @@ public class SecurityConfig {
 
                                 // 5. 요청별 인가 규칙 설정
                                 .authorizeHttpRequests(auth -> auth
+                                                // 정적 리소스와 루트 접근 허용
+                                                .requestMatchers(
+                                                                "/", "/index.html", "/404.html",
+                                                                "/favicon.ico", "/robots.txt",
+                                                                "/_not-found/**",
+                                                                "/css/**", "/_next/**",
+                                                                "*.js", "*.css", "*.svg", "*.png", "*.jpg", "*.ico",
+                                                                "*.webp")
+                                                .permitAll()
+                                                // 공개 API 허용
                                                 .requestMatchers("/api/auth/login", "/api/home", "/api/schedules")
-                                                .permitAll() // 로그인, 홈, 전체일정 API는 모두 허용
+                                                .permitAll()
+                                                // 인증/권한 필요한 API
                                                 .requestMatchers("/api/posts/my-notebook", "/api/mypage")
-                                                .hasRole("USER") // 마이페이지, 글쓰기는 USER 역할 필요
-                                                .anyRequest().authenticated() // 그 외 나머지 API는 인증만 되면 접근 가능
-                                );
+                                                .hasRole("USER")
+                                                // 나머지 API는 인증 필요
+                                                .requestMatchers("/api/**").authenticated()
+                                                // API 이외의 나머지(정적/기타)는 허용
+                                                .anyRequest().permitAll());
 
                 // 6. JWT 인증 필터 추가
                 http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),

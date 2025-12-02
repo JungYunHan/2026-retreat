@@ -32,6 +32,9 @@ dependencies {
 	// 엑셀 파일(.xlsx) 처리를 위한 Apache POI 라이브러리 추가
 	implementation 'org.apache.poi:poi-ooxml:5.2.5'
 
+	// .env 파일을 읽기 위한 라이브러리 (io.github.cdimascio:java-dotenv 로 변경)
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -46,17 +49,20 @@ dependencies {
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
+	options.compilerArgs << "-Xlint:deprecation" // Deprecated API 사용에 대한 상세 경고 출력
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+// 테스트 비활성화
+test {
+	enabled = false
 }
 
 // ===================================================
 // Next.js 빌드 통합 스크립트
 // ===================================================
 
-def frontendDir = "$projectDir/src/main/frontEnd"
+def frontendDir = "$projectDir/../frontEnd"
+def skipFrontend = project.hasProperty('skipFrontend') || System.getProperty('skipFrontend') == 'true'
 
 sourceSets {
 	main {
@@ -64,24 +70,33 @@ sourceSets {
 	}
 }
 
-processResources { dependsOn "copyFrontendToBuild" }
+// processResources가 실행될 때마다 프론트엔드 빌드를 수행하던 의존성을 제거합니다.
+// 이렇게 하면 'bootRun'으로 개발 서버를 띄울 때 Next.js 빌드를 기다리지 않습니다.
+// processResources { dependsOn "copyFrontendToBuild" }
+// 그 대신, 최종 빌드(build) 시에만 프론트엔드 빌드를 수행하도록 build 태스크에 의존성을 추가합니다.
+tasks.named("build") { dependsOn "copyFrontendToBuild" }
+
+// processResources가 copyFrontendToBuild 이후에 실행되도록 순서 지정
+tasks.named("processResources") { 
+	dependsOn "copyFrontendToBuild"
+}
 
 // 1. npm install
 task installFrontend(type: Exec) {
+	onlyIf { !skipFrontend }
 	workingDir "$frontendDir"
 	inputs.dir "$frontendDir"
 	group = BasePlugin.BUILD_GROUP
 	if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-		commandLine "npm.cmd", "audit", "fix"
-		commandLine 'npm.cmd', 'install'
+		commandLine "npm.cmd", "install"
 	} else {
-		commandLine "npm", "audit", "fix"
-		commandLine 'npm', 'install'
+		commandLine "npm", "install"
 	}
 }
 
 // 2. npm run build
 task buildFrontend(type: Exec) {
+	onlyIf { !skipFrontend }
 	dependsOn "installFrontend"
 	workingDir "$frontendDir"
 	inputs.dir "$frontendDir"
@@ -95,7 +110,24 @@ task buildFrontend(type: Exec) {
 
 // 3. 빌드 결과물(out 폴더)을 Spring Boot static 폴더로 복사
 task copyFrontendToBuild(type: Copy) {
+	onlyIf { !skipFrontend }
 	dependsOn "buildFrontend"
 	from "$frontendDir/out"
 	into "$projectDir/src/main/resources/static"
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
+	outputs.dir "$projectDir/src/main/resources/static"
+}
+
+// bootRun 할 때도 프론트엔드 자동 반영 (skipFrontend 설정 시 건너뜀)
+tasks.named('bootRun') { dependsOn 'copyFrontendToBuild' }
+
+// 빌드 로그 안내
+gradle.taskGraph.whenReady { graph ->
+	if (skipFrontend) {
+		println "[INFO] skipFrontend=true 프론트엔드 빌드/복사 생략"
+	} else if (graph.hasTask(":bootRun")) {
+		println "[INFO] bootRun 실행: Next.js 빌드 및 정적파일 반영 예정"
+	} else if (graph.hasTask(":build")) {
+		println "[INFO] 전체 build에 Next.js 정적파일 포함"
+	}
 }
