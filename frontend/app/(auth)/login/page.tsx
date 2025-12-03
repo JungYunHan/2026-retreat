@@ -33,12 +33,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className='flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4'>
+    <div className='flex h-full items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 px-4'>
       <div className='w-full max-w-md'>
         <div className='bg-white shadow-2xl rounded-2xl p-8'>
           {/* 로고/타이틀 */}
           <div className='text-center mb-8'>
-            <h1 className='text-3xl font-bold text-gray-900 mb-2'>선목젊은이</h1>
+            <h1 className='text-3xl font-bold text-gray-900 mb-2'>
+              선목젊은이
+            </h1>
             <p className='text-gray-600'>2026 겨울 동계수련회</p>
           </div>
 
@@ -53,7 +55,10 @@ export default function LoginPage() {
 
             {/* 아이디 입력 */}
             <div>
-              <label htmlFor='username' className='block text-sm font-medium text-gray-700 mb-2'>
+              <label
+                htmlFor='username'
+                className='block text-sm font-medium text-gray-700 mb-2'
+              >
                 아이디
               </label>
               <input
@@ -70,7 +75,10 @@ export default function LoginPage() {
 
             {/* 비밀번호 입력 */}
             <div>
-              <label htmlFor='password' className='block text-sm font-medium text-gray-700 mb-2'>
+              <label
+                htmlFor='password'
+                className='block text-sm font-medium text-gray-700 mb-2'
+              >
                 비밀번호
               </label>
               <input
