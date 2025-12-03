@@ -6,13 +6,13 @@ FROM node:20-alpine as frontend-builder
 WORKDIR /app/frontend
 
 # Copy frontend package files
-COPY ./frontEnd/package*.json ./
+COPY ./frontend/package*.json ./
 
 # Install dependencies (lockfile 없을 때도 동작하도록)
 RUN npm install
 
 # Copy frontend source
-COPY ./frontEnd/ ./
+COPY ./frontend/ ./
 
 # Build Next.js static export
 RUN npm run build

@@ -6,13 +6,13 @@ FROM node:20-alpine as frontend-builder
 WORKDIR /app/frontend
 
 # Copy frontend package files
-COPY frontEnd/package*.json ./
+COPY ./frontend/package*.json ./
 
 # Install dependencies (lockfile 없을 때도 동작하도록)
 RUN npm install
 
 # Copy frontend source
-COPY frontEnd/ ./
+COPY ./frontend/ ./
 
 # Build Next.js static export
 RUN npm run build
@@ -26,7 +26,7 @@ FROM gradle:8.5-jdk17-jammy as backend-builder
 WORKDIR /app
 
 # Copy backend files
-COPY backend/ ./
+COPY ./backend/ ./
 
 # Copy frontend build output to static resources
 COPY --from=frontend-builder /app/frontend/out ./src/main/resources/static
