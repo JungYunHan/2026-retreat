@@ -5,7 +5,7 @@ services:
     runtime: docker
     region: oregon
     plan: free
-    branch: main
+    branch: hjs
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     envVars:

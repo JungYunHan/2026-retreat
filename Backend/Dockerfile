@@ -8,8 +8,8 @@ WORKDIR /app/frontend
 # Copy frontend package files
 COPY frontEnd/package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (lockfile 없을 때도 동작하도록)
+RUN npm install
 
 # Copy frontend source
 COPY frontEnd/ ./
@@ -35,7 +35,7 @@ COPY --from=frontend-builder /app/frontend/out ./src/main/resources/static
 RUN chmod +x ./gradlew
 
 # Gradle을 사용하여 실행 가능한 JAR 파일을 빌드합니다. (테스트 생략, 프론트 빌드 스킵)
-RUN ./gradlew bootJar -x test -PskipFrontend
+RUN ./gradlew --no-daemon bootJar -x test -PskipFrontend
 
 # =================================================
 # Stage 3: Create a slim runtime image
@@ -48,10 +48,6 @@ COPY --from=backend-builder /app/build/libs/*.jar app.jar
 
 # 애플리케이션이 사용할 포트를 노출합니다.
 EXPOSE 8080
-
-# 헬스체크 추가
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s \
-  CMD curl -f http://localhost:8080/ || exit 1
 
 # 컨테이너가 시작될 때 애플리케이션을 실행합니다.
 ENTRYPOINT ["java", "-jar", "app.jar"]

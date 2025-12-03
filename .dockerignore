@@ -1,0 +1,29 @@
+# Global Docker build context ignore
+.git
+.github
+.gitignore
+.vscode
+node_modules
+**/node_modules
+**/.next
+**/out
+**/dist
+**/build
+**/.gradle
+**/.idea
+**/.DS_Store
+**/*.log
+**/tmp
+**/target
+
+# Keep frontend sources but ignore caches
+frontEnd/.next
+frontEnd/node_modules
+
+# Gradle caches and outputs
+backend/.gradle
+backend/build
+
+# OS files
+Thumbs.db
+.DS_Store
