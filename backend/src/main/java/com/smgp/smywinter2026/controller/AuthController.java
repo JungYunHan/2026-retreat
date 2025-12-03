@@ -1,6 +1,7 @@
 package com.smgp.smywinter2026.controller;
 
 import com.smgp.smywinter2026.jwt.JwtTokenProvider;
+import com.smgp.smywinter2026.model.dto.ApiResponse;
 import com.smgp.smywinter2026.model.dto.LoginRequestDto;
 import com.smgp.smywinter2026.model.dto.LoginResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +23,18 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * 로그인 API
+     * POST /api/auth/login
+     * 요청: { "username": "user1", "password": "password123" }
+     * 응답: { "success": true, "data": { "accessToken": "jwt-token-here" } }
+     */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequest) {
+    public ResponseEntity<ApiResponse<LoginResponseDto>> login(@RequestBody LoginRequestDto loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtTokenProvider.createToken(authentication);
-        return ResponseEntity.ok(new LoginResponseDto(token));
+        return ResponseEntity.ok(ApiResponse.success(new LoginResponseDto(token)));
     }
 }

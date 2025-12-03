@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useState } from 'react';
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function Footer() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,12 +15,12 @@ export default function Footer() {
     <footer className='fixed bottom-0 left-1/2 -translate-x-1/2 max-w-[428px] min-w-[320px] w-full h-[60px] border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'>
       <div className='relative flex justify-around items-center w-full h-full'>
         <div className='flex items-center justify-around w-1/3'>
-          <button
-            type='button'
+          <Link
+            href='/'
             className='flex justify-center items-center text-zinc-500 cursor-pointer'
           >
-            버튼1
-          </button>
+            홈
+          </Link>
           <button
             type='button'
             className='flex justify-center items-center text-zinc-500 cursor-pointer'
@@ -43,12 +44,12 @@ export default function Footer() {
           >
             버튼3
           </button>
-          <button
-            type='button'
+          <Link
+            href='/mypage'
             className='flex justify-center items-center text-zinc-500 cursor-pointer'
           >
-            버튼4
-          </button>
+            마이페이지
+          </Link>
         </div>
       </div>
     </footer>
