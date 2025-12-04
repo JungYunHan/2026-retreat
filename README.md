@@ -97,11 +97,6 @@ frontEnd
 ./gradlew bootRun
 ``` 
 
-# 프론트엔드 없이 백엔드만 실행하려면 다음과 같이 입력합니다.
-```bash
-.\gradlew bootRun -PskipFrontend
-
-
 2.  **애플리케이션 접속**
     -   **API 서버**: `http://localhost:8080`
 
@@ -128,5 +123,29 @@ frontEnd
     -   **웹 페이지**: 웹 브라우저에서 `http://localhost:3000` 으로 접속합니다.
 
 ### 테스트 계정
-- **이메일**: `user@example.com`
-- **비밀번호**: `password`
+- **일반 사용자**
+  - 이메일: `user@example.com`
+  - 비밀번호: `password`
+- **관리자**
+  - 이메일: `admin@example.com` (role이 ADMIN인 계정)
+  - 비밀번호: 별도 설정
+
+## 🔧 관리자 페이지
+
+관리자 계정(role='ADMIN')으로 로그인 후 `/admin` 페이지에 접속하면 다음 기능을 사용할 수 있습니다:
+
+### 주요 기능
+- **사용자 관리**: 사용자 목록 조회, 수정, 삭제
+- **게시글 관리**: 모든 게시글 조회 및 삭제
+- **메뉴 관리**: 식사 메뉴 생성, 조회, 삭제
+- **스케줄 관리**: 일정 생성, 수정, 삭제
+- **통계 대시보드**: 전체 데이터 통계 확인
+
+### API 엔드포인트
+- `GET /api/admin/users` - 모든 사용자 조회
+- `POST /api/admin/users` - 사용자 생성
+- `PUT /api/admin/users/{id}` - 사용자 수정
+- `DELETE /api/admin/users/{id}` - 사용자 삭제
+- `GET /api/admin/stats` - 통계 정보 조회
+
+**주의**: 모든 `/api/admin/**` 엔드포인트는 ADMIN 권한이 필요합니다.

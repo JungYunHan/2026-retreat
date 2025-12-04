@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,11 +19,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Collections;
 
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -59,6 +62,8 @@ public class SecurityConfig {
                                                 // 공개 API 허용
                                                 .requestMatchers("/api/auth/login", "/api/home", "/api/schedules")
                                                 .permitAll()
+                                                // 관리자 전용 API
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                                 // 인증/권한 필요한 API
                                                 .requestMatchers("/api/posts/my-notebook", "/api/mypage")
                                                 .hasRole("USER")
@@ -78,14 +83,16 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-                // Next.js 개발 서버 주소 허용
-                configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+                // Next.js 개발 서버와 Render 배포 주소 허용
+                configuration.setAllowedOrigins(List.of(
+                                "http://localhost:3000",
+                                "https://smy-winter-2026.onrender.com"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
                 configuration.setAllowCredentials(true);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", configuration); // 모든 경로에 대해 CORS 설정 적용
+                source.registerCorsConfiguration("/**", configuration);
                 return source;
         }
 
