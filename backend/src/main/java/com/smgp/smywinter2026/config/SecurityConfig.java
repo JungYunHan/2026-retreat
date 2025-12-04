@@ -57,7 +57,8 @@ public class SecurityConfig {
                                                                 "*.webp")
                                                 .permitAll()
                                                 // 공개 API 허용
-                                                .requestMatchers("/api/auth/login", "/api/home", "/api/schedules")
+                                                .requestMatchers("/api/auth/login", "/api/home", "/api/schedules",
+                                                                "/api/health", "/api/ping")
                                                 .permitAll()
                                                 // 인증/권한 필요한 API
                                                 .requestMatchers("/api/posts/my-notebook", "/api/mypage")
