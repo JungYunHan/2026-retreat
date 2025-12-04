@@ -97,6 +97,11 @@ frontEnd
 ./gradlew bootRun
 ``` 
 
+# 프론트엔드 없이 백엔드만 실행하려면 다음과 같이 입력합니다.
+```bash
+.\gradlew bootRun -PskipFrontend
+
+
 2.  **애플리케이션 접속**
     -   **API 서버**: `http://localhost:8080`
 
