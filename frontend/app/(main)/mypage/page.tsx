@@ -56,75 +56,126 @@ export default function MyPage() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-6 pb-20">
-      {/* 프로필 카드 */}
-      <div className="rounded-lg shadow-sm bg-white mb-4">
-        <div className="p-6 text-center">
-          <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gray-200 flex items-center justify-center">
-            <svg
-              className="w-12 h-12 text-gray-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                clipRule="evenodd"
-              />
-            </svg>
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-6 pb-20">
+      <div className="max-w-2xl mx-auto">
+        {/* 프로필 카드 */}
+        <div className="rounded-2xl shadow-lg bg-white mb-6 overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-8 text-center">
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center ring-4 ring-white/30">
+              <svg
+                className="w-14 h-14 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <h4 className="text-2xl font-bold text-white mb-2">{userData.name}</h4>
+            <p className="text-indigo-100 text-sm">
+              {userData.teamName} · {userData.position}
+            </p>
           </div>
-          <h4 className="text-xl font-bold mb-1">{userData.name}</h4>
-          <p className="text-gray-600">
-            {userData.teamName} / {userData.position}
-          </p>
         </div>
-      </div>
 
-      {/* 내 정보 카드 */}
-      <div className="rounded-lg shadow-sm bg-white mb-4">
-        <div className="border-b p-4">
-          <h5 className="font-semibold">내 정보</h5>
+        {/* 내 정보 카드 */}
+        <div className="rounded-2xl shadow-lg bg-white mb-6 overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+            <h5 className="font-bold text-gray-800 flex items-center gap-2">
+              <span className="text-lg">👤</span>
+              <span>내 정보</span>
+            </h5>
+          </div>
+          <ul className="divide-y divide-gray-100">
+            <li className="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-center">
+                <strong className="text-gray-600 text-sm font-medium">아이디</strong>
+                <span className="text-gray-900 font-semibold">{userData.username}</span>
+              </div>
+            </li>
+            <li className="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-center">
+                <strong className="text-gray-600 text-sm font-medium">이메일</strong>
+                <span className="text-gray-900">{userData.email}</span>
+              </div>
+            </li>
+            <li className="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-center">
+                <strong className="text-gray-600 text-sm font-medium">연락처</strong>
+                <span className="text-gray-900">{userData.phoneNumber}</span>
+              </div>
+            </li>
+            <li className="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-center">
+                <strong className="text-gray-600 text-sm font-medium">조</strong>
+                <span className="text-gray-900 font-semibold">{userData.teamName}</span>
+              </div>
+            </li>
+            <li className="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-center">
+                <strong className="text-gray-600 text-sm font-medium">권한</strong>
+                <span className="inline-block px-4 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md">
+                  {userData.role}
+                </span>
+              </div>
+            </li>
+          </ul>
         </div>
-        <ul className="divide-y">
-          <li className="px-4 py-3 flex justify-between items-center">
-            <strong className="text-gray-700">이메일</strong>
-            <span className="text-gray-600">{userData.email}</span>
-          </li>
-          <li className="px-4 py-3 flex justify-between items-center">
-            <strong className="text-gray-700">연락처</strong>
-            <span className="text-gray-600">{userData.phoneNumber}</span>
-          </li>
-          <li className="px-4 py-3 flex justify-between items-center">
-            <strong className="text-gray-700">권한</strong>
-            <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600">
-              {userData.role}
-            </span>
-          </li>
-        </ul>
-      </div>
 
-      {/* 메뉴 리스트 */}
-      <div className="rounded-lg shadow-sm bg-white">
-        <button
-          onClick={() => router.push("/change-password")}
-          className="w-full px-4 py-3 flex justify-between items-center border-b hover:bg-gray-50 transition"
-        >
-          <div className="flex items-center gap-2">
-            <span>🔑</span>
-            <span>비밀번호 변경</span>
+        {/* 숙소 정보 카드 */}
+        {userData.roomName && (
+          <div className="rounded-2xl shadow-lg bg-white mb-6 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-100 px-6 py-4 border-b border-green-200">
+              <h5 className="font-bold text-gray-800 flex items-center gap-2">
+                <span className="text-lg">🏠</span>
+                <span>숙소 정보</span>
+              </h5>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              <li className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div className="flex justify-between items-center">
+                  <strong className="text-gray-600 text-sm font-medium">숙소명</strong>
+                  <span className="text-gray-900 font-semibold">{userData.roomName}</span>
+                </div>
+              </li>
+              {userData.roomLocation && (
+                <li className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex justify-between items-center">
+                    <strong className="text-gray-600 text-sm font-medium">위치</strong>
+                    <span className="text-gray-900">{userData.roomLocation}</span>
+                  </div>
+                </li>
+              )}
+            </ul>
           </div>
-          <span className="text-gray-400">›</span>
-        </button>
-        <button
-          onClick={handleLogout}
-          className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 transition"
-        >
-          <div className="flex items-center gap-2">
-            <span>📤</span>
-            <span>로그아웃</span>
-          </div>
-          <span className="text-gray-400">›</span>
-        </button>
+        )}
+
+        {/* 메뉴 리스트 */}
+        <div className="rounded-2xl shadow-lg bg-white overflow-hidden">
+          <button
+            onClick={() => router.push("/change-password")}
+            className="w-full px-6 py-4 flex justify-between items-center border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🔑</span>
+              <span className="font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">비밀번호 변경</span>
+            </div>
+            <span className="text-gray-400 group-hover:text-indigo-600 transition-colors text-xl">›</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full px-6 py-4 flex justify-between items-center hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">📤</span>
+              <span className="font-medium text-gray-700 group-hover:text-red-600 transition-colors">로그아웃</span>
+            </div>
+            <span className="text-gray-400 group-hover:text-red-600 transition-colors text-xl">›</span>
+          </button>
+        </div>
       </div>
     </main>
   );

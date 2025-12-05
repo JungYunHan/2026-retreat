@@ -37,11 +37,14 @@ export interface SimpleNotice {
 
 export interface MyPageData {
   name: string;
+  username: string;
   email: string;
   phoneNumber: string;
   teamName: string;
   position: string;
   role: string;
+  roomName: string | null;
+  roomLocation: string | null;
 }
 
 export const authApi = {

@@ -64,9 +64,9 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 // 관리자 전용 API
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                                // 인증/권한 필요한 API
+                                                // 인증/권한 필요한 API (USER와 ADMIN 모두 허용)
                                                 .requestMatchers("/api/posts/my-notebook", "/api/mypage")
-                                                .hasRole("USER")
+                                                .hasAnyRole("USER", "ADMIN")
                                                 // 나머지 API는 인증 필요
                                                 .requestMatchers("/api/**").authenticated()
                                                 // API 이외의 나머지(정적/기타)는 허용

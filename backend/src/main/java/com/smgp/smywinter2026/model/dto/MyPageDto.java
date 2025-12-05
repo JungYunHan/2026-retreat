@@ -7,9 +7,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MyPageDto {
     private final String name;
+    private final String username;
     private final String email;
     private final String phoneNumber;
     private final String teamName;
     private final String position;
     private final String role;
+    private final String roomName;
+    private final String roomLocation;
 }
