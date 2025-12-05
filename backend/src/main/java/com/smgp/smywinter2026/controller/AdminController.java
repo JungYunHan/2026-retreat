@@ -2,6 +2,9 @@ package com.smgp.smywinter2026.controller;
 
 import com.smgp.smywinter2026.domain.*;
 import com.smgp.smywinter2026.model.dto.ApiResponse;
+import com.smgp.smywinter2026.model.dto.RoomAssignmentDto;
+import com.smgp.smywinter2026.model.dto.RoomDto;
+import com.smgp.smywinter2026.model.dto.RoomUserDto;
 import com.smgp.smywinter2026.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 관리자 전용 컨트롤러 - DB 관리 기능
@@ -69,6 +73,8 @@ public class AdminController {
         // 업데이트할 필드들
         if (userDetails.getName() != null)
             user.setName(userDetails.getName());
+        if (userDetails.getUsername() != null)
+            user.setUsername(userDetails.getUsername());
         if (userDetails.getEmail() != null)
             user.setEmail(userDetails.getEmail());
         if (userDetails.getPhoneNumber() != null)
@@ -150,13 +156,25 @@ public class AdminController {
     /**
      * 메뉴 수정
      * PUT /api/admin/menus/{id}
-     * Note: Menu는 불변 객체이므로 수정 불가. 삭제 후 새로 생성 필요
      */
     @PutMapping("/menus/{id}")
-    public ResponseEntity<ApiResponse<String>> updateMenu(
+    public ResponseEntity<ApiResponse<Menu>> updateMenu(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> menuDetails) {
-        return ResponseEntity.ok(ApiResponse.error("메뉴는 불변 객체입니다. 삭제 후 새로 생성해주세요."));
+            @RequestBody Menu menuDetails) {
+        Menu menu = menuRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("메뉴를 찾을 수 없습니다."));
+
+        if (menuDetails.getMenuDate() != null)
+            menu.setMenuDate(menuDetails.getMenuDate());
+        if (menuDetails.getMealType() != null)
+            menu.setMealType(menuDetails.getMealType());
+        if (menuDetails.getMainDish() != null)
+            menu.setMainDish(menuDetails.getMainDish());
+        if (menuDetails.getSideDishes() != null)
+            menu.setSideDishes(menuDetails.getSideDishes());
+
+        Menu updatedMenu = menuRepository.save(menu);
+        return ResponseEntity.ok(ApiResponse.success(updatedMenu));
     }
 
     /**
@@ -229,6 +247,99 @@ public class AdminController {
     public ResponseEntity<ApiResponse<String>> deleteSchedule(@PathVariable Integer id) {
         scheduleRepository.deleteById(id);
         return ResponseEntity.ok(ApiResponse.success("스케줄이 삭제되었습니다."));
+    }
+
+    // ==================== 숙소 관리 ====================
+
+    /**
+     * 모든 숙소 조회
+     * GET /api/admin/rooms
+     */
+    @GetMapping("/rooms")
+    public ResponseEntity<ApiResponse<List<RoomDto>>> getAllRooms() {
+        List<RoomDto> rooms = roomRepository.findAll().stream()
+                .map(this::toRoomDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.success(rooms));
+    }
+
+    /**
+     * 숙소 생성
+     * POST /api/admin/rooms
+     */
+    @PostMapping("/rooms")
+    public ResponseEntity<ApiResponse<RoomDto>> createRoom(@RequestBody Room room) {
+        Room savedRoom = roomRepository.save(room);
+        return ResponseEntity.ok(ApiResponse.success(toRoomDto(savedRoom)));
+    }
+
+    /**
+     * 숙소 수정
+     * PUT /api/admin/rooms/{id}
+     */
+    @PutMapping("/rooms/{id}")
+    public ResponseEntity<ApiResponse<RoomDto>> updateRoom(
+            @PathVariable Integer id,
+            @RequestBody Room roomDetails) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("숙소를 찾을 수 없습니다."));
+
+        if (roomDetails.getName() != null)
+            room.setName(roomDetails.getName());
+        if (roomDetails.getCapacity() != null)
+            room.setCapacity(roomDetails.getCapacity());
+        if (roomDetails.getGenderType() != null)
+            room.setGenderType(roomDetails.getGenderType());
+        if (roomDetails.getLocation() != null)
+            room.setLocation(roomDetails.getLocation());
+        if (roomDetails.getMemo() != null)
+            room.setMemo(roomDetails.getMemo());
+
+        Room updatedRoom = roomRepository.save(room);
+        return ResponseEntity.ok(ApiResponse.success(toRoomDto(updatedRoom)));
+    }
+
+    /**
+     * 숙소 삭제
+     * DELETE /api/admin/rooms/{id}
+     */
+    @DeleteMapping("/rooms/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteRoom(@PathVariable Integer id) {
+        roomRepository.deleteById(id);
+        return ResponseEntity.ok(ApiResponse.success("숙소가 삭제되었습니다."));
+    }
+
+    private RoomDto toRoomDto(Room room) {
+        List<RoomAssignmentDto> assignments = room.getAssignments().stream()
+                .map(this::toRoomAssignmentDto)
+                .collect(Collectors.toList());
+
+        return new RoomDto(
+                room.getId(),
+                room.getName(),
+                room.getCapacity(),
+                room.getGenderType(),
+                room.getLocation(),
+                room.getMemo(),
+                assignments);
+    }
+
+    private RoomAssignmentDto toRoomAssignmentDto(RoomAssignment assignment) {
+        User user = assignment.getUser();
+        RoomUserDto userDto = new RoomUserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getName(),
+                user.getPhoneNumber(),
+                user.getGender(),
+                user.getTeamName(),
+                user.getPosition());
+
+        return new RoomAssignmentDto(
+                assignment.getId(),
+                assignment.isRoomLeader(),
+                assignment.getAssignedAt(),
+                userDto);
     }
 
     // ==================== 통계 정보 ====================
