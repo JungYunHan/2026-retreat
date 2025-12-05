@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 
 interface DashboardStats {
+  totalVehicles: any;
   totalUsers: number;
   totalPosts: number;
   totalMenus: number;
@@ -18,6 +19,7 @@ export default function AdminDashboard() {
     totalMenus: 0,
     totalSchedules: 0,
     totalRooms: 0,
+    totalVehicles: 0,
   });
   const [loading, setLoading] = useState(false);
 
@@ -44,6 +46,7 @@ export default function AdminDashboard() {
           totalMenus: 0,
           totalSchedules: 0,
           totalRooms: 0,
+          totalVehicles: 0,
         });
       } else {
         console.error("통계 로드 실패:", response.statusText);
@@ -106,74 +109,52 @@ export default function AdminDashboard() {
       color: "bg-pink-900 border-pink-700",
       textColor: "text-pink-400",
     },
+        {
+      title: "차량 관리",
+      description: "차량 정보 관리",
+      href: "/admin/vehicles",
+      icon: "🚗",
+      count: stats.totalVehicles,
+      color: "bg-pink-900 border-pink-700",
+      textColor: "text-pink-400",
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      {/* 사이드바 */}
-      <div className="w-64 bg-gray-800 border-r border-gray-700 p-6 fixed h-screen overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-8">관리 메뉴</h2>
-        <nav className="space-y-2">
-          {[
-            { href: "/admin", label: "대시보드", icon: "📊", active: true },
-            { href: "/admin/users", label: "사용자 관리", icon: "👥" },
-            { href: "/admin/posts", label: "게시글 관리", icon: "📝" },
-            { href: "/admin/menus", label: "메뉴 관리", icon: "🍽️" },
-            { href: "/admin/schedules", label: "스케줄 관리", icon: "📅" },
-            { href: "/admin/rooms", label: "숙소 관리", icon: "🏨" },
-          ].map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={`block px-4 py-3 rounded-lg transition-colors ${
-                item.active
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-700 text-gray-300 hover:text-white"
-              }`}
-            >
-              <span className="mr-2">{item.icon}</span>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </div>
-
-      {/* 메인 콘텐츠 */}
-      <div className="flex-1 ml-64 p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold">관리자 대시보드</h1>
-            <p className="text-gray-400 mt-2">2026 겨울 수련회 전체 관리 시스템</p>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <p className="mt-2 text-gray-400">로딩 중...</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-3 gap-6 mb-12">
-                {adminItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    <div className={`${item.color} border rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105`}>
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`text-4xl ${item.textColor}`}>{item.icon}</div>
-                        <div className={`px-3 py-1 rounded-full text-sm font-semibold ${item.textColor}`}>
-                          {item.count}개
-                        </div>
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-100 mb-1">{item.title}</h3>
-                      <p className="text-gray-300 text-sm">{item.description}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-
-              {/* 빠른 액션 */}
-            </>
-          )}
+    <div className="p-8">
+      <div className="max-w-full">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold">관리자 대시보드</h1>
+          <p className="text-gray-400 mt-2">2026 겨울 수련회 전체 관리 시스템</p>
         </div>
+
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <p className="mt-2 text-gray-400">로딩 중...</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-6 mb-12">
+              {adminItems.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <div className={`${item.color} border rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105`}>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`text-4xl ${item.textColor}`}>{item.icon}</div>
+                      <div className={`px-3 py-1 rounded-full text-sm font-semibold ${item.textColor}`}>
+                        {item.count}개
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-100 mb-1">{item.title}</h3>
+                    <p className="text-gray-300 text-sm">{item.description}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* 빠른 액션 */}
+          </>
+        )}
       </div>
     </div>
   );

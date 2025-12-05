@@ -161,10 +161,9 @@ export default function PostsAdminPage() {
       </div>
 
       {/* 메인 콘텐츠 */}
-      <div className="flex-1 ml-64 p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700">
-            <div className="p-8 space-y-6">
+      <div className="max-w-full">
+        <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700">
+          <div className="p-8 space-y-6">
               <div className="flex justify-between items-center">
                 <div>
                   <h1 className="text-4xl font-bold">게시글 관리</h1>
@@ -304,6 +303,5 @@ export default function PostsAdminPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

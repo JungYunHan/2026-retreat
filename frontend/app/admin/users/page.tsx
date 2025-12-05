@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface User {
@@ -164,38 +164,8 @@ export default function UsersAdminPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      {/* 사이드바 */}
-      <div className="w-64 bg-gray-800 border-r border-gray-700 p-6 fixed h-screen overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-8">관리 메뉴</h2>
-        <nav className="space-y-2">
-          {[
-            { href: "/admin", label: "대시보드", icon: "📊" },
-            { href: "/admin/users", label: "사용자 관리", icon: "👥", active: true },
-            { href: "/admin/posts", label: "게시글 관리", icon: "📝" },
-            { href: "/admin/menus", label: "메뉴 관리", icon: "🍽️" },
-            { href: "/admin/schedules", label: "스케줄 관리", icon: "📅" },
-            { href: "/admin/rooms", label: "숙소 관리", icon: "🏨" },
-          ].map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={`block px-4 py-3 rounded-lg transition-colors ${
-                item.active
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-700 text-gray-300 hover:text-white"
-              }`}
-            >
-              <span className="mr-2">{item.icon}</span>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </div>
-
-      {/* 메인 콘텐츠 */}
-      <div className="flex-1 ml-64 p-8">
-        <div className="max-w-7xl mx-auto">
+    <div className="p-8">
+      <div className="max-w-full">
           <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700">
             <div className="p-8 space-y-6">
               <div className="flex justify-between items-center">
@@ -375,7 +345,6 @@ export default function UsersAdminPage() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* 수정 모달 */}
       {editingUser && (
@@ -396,8 +365,8 @@ export default function UsersAdminPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">이름</label>
                 <input
                   type="text"
-                  value={editingUser.name}
-                  onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                  value={editingUser?.name ?? ""}
+                  onChange={(e) => editingUser && setEditingUser({ ...editingUser, name: e.target.value })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                 />
               </div>
@@ -405,8 +374,8 @@ export default function UsersAdminPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">이메일</label>
                 <input
                   type="email"
-                  value={editingUser.email}
-                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  value={editingUser?.email ?? ""}
+                  onChange={(e) => editingUser && setEditingUser({ ...editingUser, email: e.target.value })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                 />
               </div>
@@ -414,8 +383,8 @@ export default function UsersAdminPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">팀</label>
                 <input
                   type="text"
-                  value={editingUser.teamName ?? ""}
-                  onChange={(e) => setEditingUser({ ...editingUser, teamName: e.target.value })}
+                  value={editingUser?.teamName ?? ""}
+                  onChange={(e) => editingUser && setEditingUser({ ...editingUser, teamName: e.target.value })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                 />
               </div>
@@ -423,16 +392,16 @@ export default function UsersAdminPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">직책</label>
                 <input
                   type="text"
-                  value={editingUser.position ?? ""}
-                  onChange={(e) => setEditingUser({ ...editingUser, position: e.target.value })}
+                  value={editingUser?.position ?? ""}
+                  onChange={(e) => editingUser && setEditingUser({ ...editingUser, position: e.target.value })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                 />
               </div>
               <div className="col-span-1">
                 <label className="block text-sm font-medium text-gray-300 mb-2">역할</label>
                 <select
-                  value={editingUser.role}
-                  onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as "ADMIN" | "USER" })}
+                  value={editingUser?.role ?? "USER"}
+                  onChange={(e) => editingUser && setEditingUser({ ...editingUser, role: e.target.value as "ADMIN" | "USER" })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="USER">일반사용자</option>
@@ -461,7 +430,7 @@ export default function UsersAdminPage() {
               </div>
               <div className="col-span-2 flex gap-3 pt-2">
                 <button
-                  onClick={() => saveUser(editingUser)}
+                  onClick={() => editingUser && saveUser(editingUser)}
                   className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium"
                 >
                   저장

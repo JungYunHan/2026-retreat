@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect } from "react";
+import AdminSidebar from "@/components/AdminSidebar";
 import "./admin.css";
 
 export default function AdminLayout({
@@ -70,6 +71,7 @@ export default function AdminLayout({
           background-color: #111827; /* bg-gray-900 */
           color: white;
           width: 100%;
+          display: flex;
         }
         
         #admin-root input,
@@ -107,9 +109,20 @@ export default function AdminLayout({
         #admin-root ::-webkit-scrollbar-thumb:hover {
           background: #6b7280; /* gray-500 */
         }
+
+        /* 콘텐츠 영역이 사이드바 옆에 오도록 */
+        .admin-main-content {
+          flex: 1;
+          margin-left: 256px; /* w-64 = 256px */
+          width: calc(100% - 256px);
+          overflow-y: auto;
+        }
       `}</style>
       <div id="admin-root" className="min-h-screen bg-gray-900 w-full">
-        {children}
+        <AdminSidebar />
+        <div className="admin-main-content">
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -127,41 +127,11 @@ export default function MenusAdminPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      {/* 사이드바 */}
-      <div className="w-64 bg-gray-800 border-r border-gray-700 p-6 fixed h-screen overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-8">관리 메뉴</h2>
-        <nav className="space-y-2">
-          {[
-            { href: "/admin", label: "대시보드", icon: "📊" },
-            { href: "/admin/users", label: "사용자 관리", icon: "👥" },
-            { href: "/admin/posts", label: "게시글 관리", icon: "📝" },
-            { href: "/admin/menus", label: "메뉴 관리", icon: "🍽️", active: true },
-            { href: "/admin/schedules", label: "스케줄 관리", icon: "📅" },
-            { href: "/admin/rooms", label: "숙소 관리", icon: "🏨" },
-          ].map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={`block px-4 py-3 rounded-lg transition-colors ${
-                item.active
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-700 text-gray-300 hover:text-white"
-              }`}
-            >
-              <span className="mr-2">{item.icon}</span>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </div>
-
-      {/* 메인 콘텐츠 */}
-      <div className="flex-1 ml-64 p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700">
-            <div className="p-8 space-y-6">
-              <div className="flex justify-between items-center">
+    <div className="p-8">
+      <div className="max-w-full">
+        <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700">
+          <div className="p-8 space-y-6">
+            <div className="flex justify-between items-center">
                 <div>
                   <h1 className="text-4xl font-bold">메뉴 관리</h1>
                   <p className="text-gray-400 mt-2">총 {sortedMenus.length}개의 메뉴</p>
@@ -341,6 +311,5 @@ export default function MenusAdminPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
