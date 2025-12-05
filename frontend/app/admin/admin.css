@@ -1,0 +1,34 @@
+/* Admin 레이아웃 최적화 - 최우선 순위 */
+html[data-admin="true"],
+html[data-admin="true"] * {
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+html[data-admin="true"] {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+body[data-admin="true"],
+body[data-admin="true"] * {
+  max-width: none !important;
+}
+
+body[data-admin="true"] {
+  width: 100% !important;
+  margin: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#admin-root {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 100vw !important;
+}
+
+/* 추가 보강 */
+[data-admin="true"] > body {
+  max-width: 100vw !important;
+  width: 100vw !important;
+}

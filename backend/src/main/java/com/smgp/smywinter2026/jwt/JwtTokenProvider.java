@@ -1,8 +1,6 @@
 package com.smgp.smywinter2026.jwt;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Base64;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -45,10 +42,10 @@ public class JwtTokenProvider {
         Date validity = new Date(now.getTime() + tokenValidityInMilliseconds);
 
         return Jwts.builder()
-                .setSubject(authentication.getName())
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(key) // 변경: 알고리즘을 직접 지정하지 않아도 키(key)에서 자동으로 추론합니다.
+                .subject(authentication.getName())
+                .issuedAt(now)
+                .expiration(validity)
+                .signWith(key)
                 .compact();
     }
 
