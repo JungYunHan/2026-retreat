@@ -77,13 +77,23 @@ public class PageController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
+        String roomName = null;
+        String roomLocation = null;
+        if (user.getRoomAssignment() != null && user.getRoomAssignment().getRoom() != null) {
+            roomName = user.getRoomAssignment().getRoom().getName();
+            roomLocation = user.getRoomAssignment().getRoom().getLocation();
+        }
+
         MyPageDto myPageDto = new MyPageDto(
                 user.getName(),
+                user.getUsername(),
                 user.getEmail(),
                 user.getPhoneNumber(),
                 user.getTeamName(),
                 user.getPosition(),
-                user.getRole());
+                user.getRole(),
+                roomName,
+                roomLocation);
 
         return ResponseEntity.ok(ApiResponse.success(myPageDto));
     }

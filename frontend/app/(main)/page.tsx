@@ -116,150 +116,168 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-6">
-      <HomeCarousel />
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-6 pb-20">
+      <div className="max-w-4xl mx-auto">
+        <HomeCarousel />
 
-      <header className="py-4 text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold">2026 선목젊은이 동계수련회</h1>
-        <p className="text-gray-600">함께 만들어가는 기쁨의 여정</p>
-      </header>
+        <header className="py-6 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            2026 느헤미야 동계 수련회 
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-base">함께 만들어가는 기쁨의 여정</p>
+        </header>
 
-      <div className="my-4 rounded-lg border bg-white p-4 text-sm shadow-sm">
-        <span className="font-semibold">{username}</span>님, 환영합니다!
-      </div>
+        <div className="my-6 rounded-2xl border border-indigo-200 bg-gradient-to-r from-white to-indigo-50 p-5 text-sm shadow-lg">
+          <span className="font-bold text-indigo-600">{username}</span>님, 환영합니다! 🎉
+        </div>
 
-      {/* D-Day 단일 카드 */}
-      <div className="rounded-lg shadow-sm bg-white mb-4">
-        <div className="p-6 text-center">
-          <h5 className="text-gray-500 mb-2">수련회까지</h5>
-          <p className="text-4xl font-bold text-orange-600">D-{dDay}</p>
-        </div>
-      </div>
-
-      {/* 오늘의 주요 일정 단일 카드 (스타일 강화) */}
-      <div className="rounded-lg shadow-sm bg-white mb-4">
-        <div className="border-b p-4 flex items-center justify-between">
-          <h5 className="font-semibold">오늘의 주요 일정</h5>
-          <Link href="/timetable" className="text-sm text-indigo-600 hover:underline">
-            전체 일정 보기 →
-          </Link>
-        </div>
-        <div className="p-2">
-          {scheduleItems && scheduleItems.length > 0 ? (
-            <ul className="divide-y">
-              {scheduleItems.map((item) => (
-                <li key={item.id} className="p-3 flex items-center gap-3">
-                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-orange-50 text-orange-600 font-semibold">
-                    {formatTime(item.startTime)}
-                  </span>
-                  <Link href="/timetable" className="flex-1 text-zinc-800 hover:text-indigo-700 hover:underline font-medium">
-                    {item.title}
-                  </Link>
-                  <span className="text-zinc-400 text-sm">›</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500 p-4">등록된 일정이 없습니다.</p>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-lg shadow-sm bg-white mb-4">
-        <div className="border-b p-4">
-          <h5 className="font-semibold">오늘의 메뉴</h5>
-        </div>
-        <div className="p-4">
-          {menu ? (
-            <div className="grid grid-cols-3 text-center divide-x">
-              <div className="px-2">
-                <h6 className="text-gray-500">아침</h6>
-                {menu.breakfast ? (
-                  <>
-                    <p className="font-bold">{menu.breakfast.mainDish}</p>
-                    {menu.breakfast.sideDishes && (
-                      <small className="text-gray-500">{menu.breakfast.sideDishes}</small>
-                    )}
-                  </>
-                ) : (
-                  <p>-</p>
-                )}
-              </div>
-              <div className="px-2">
-                <h6 className="text-gray-500">점심</h6>
-                {menu.lunch ? (
-                  <>
-                    <p className="font-bold">{menu.lunch.mainDish}</p>
-                    {menu.lunch.sideDishes && (
-                      <small className="text-gray-500">{menu.lunch.sideDishes}</small>
-                    )}
-                  </>
-                ) : (
-                  <p>-</p>
-                )}
-              </div>
-              <div className="px-2">
-                <h6 className="text-gray-500">저녁</h6>
-                {menu.dinner ? (
-                  <>
-                    <p className="font-bold">{menu.dinner.mainDish}</p>
-                    {menu.dinner.sideDishes && (
-                      <small className="text-gray-500">{menu.dinner.sideDishes}</small>
-                    )}
-                  </>
-                ) : (
-                  <p>-</p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <p className="text-center text-gray-500">오늘의 메뉴 정보가 없습니다.</p>
-          )}
-        </div>
-      </div>
-
-      {/* 차량 안내 카드 */}
-      <div className="rounded-lg shadow-sm bg-white mb-4">
-        <div className="border-b p-4">
-          <h5 className="font-semibold">차량 안내</h5>
-        </div>
-        <div className="p-4">
-          <div className="flex items-center gap-2 whitespace-nowrap overflow-hidden">
-            <span className="text-orange-600">🚌</span>
-            <span className="text-gray-600 text-sm overflow-hidden text-ellipsis">
-              {transportationInfo ?? "차량 정보가 곧 업데이트될 예정입니다."}
-            </span>
+        {/* D-Day 카드 */}
+        <div className="rounded-2xl shadow-lg bg-gradient-to-br from-orange-400 to-pink-500 mb-6 overflow-hidden">
+          <div className="p-8 text-center text-white">
+            <h5 className="text-white/90 mb-3 text-lg font-medium">수련회까지</h5>
+            <p className="text-6xl font-extrabold drop-shadow-lg">D-{dDay}</p>
+            <p className="mt-2 text-white/80 text-sm">기대되는 시간이 다가오고 있어요!</p>
           </div>
         </div>
-      </div>
 
-      {/* 최신 공지 카드 */}
-      <div className="rounded-lg shadow-sm bg-white">
-        <div className="border-b p-4">
-          <h5 className="font-semibold">최신 공지</h5>
+        {/* 오늘의 주요 일정 */}
+        <div className="rounded-2xl shadow-lg bg-white mb-6 overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-indigo-100 flex items-center justify-between">
+            <h5 className="font-bold text-gray-800 flex items-center gap-2">
+              <span className="text-xl">📅</span>
+              <span>오늘의 주요 일정</span>
+            </h5>
+            <Link href="/timetable" className="text-sm text-indigo-600 hover:text-indigo-800 font-semibold transition-colors">
+              전체 보기 →
+            </Link>
+          </div>
+          <div className="p-2">
+            {scheduleItems && scheduleItems.length > 0 ? (
+              <ul className="divide-y divide-gray-100">
+                {scheduleItems.map((item) => (
+                  <li key={item.id} className="p-4 flex items-center gap-4 hover:bg-indigo-50 transition-colors rounded-lg">
+                    <span className="inline-flex items-center justify-center min-w-[4rem] h-12 rounded-xl bg-gradient-to-br from-orange-400 to-pink-500 text-white font-bold text-sm shadow-md">
+                      {formatTime(item.startTime)}
+                    </span>
+                    <Link href="/timetable" className="flex-1 text-gray-800 hover:text-indigo-700 font-semibold text-base">
+                      {item.title}
+                    </Link>
+                    <span className="text-indigo-400 text-lg">›</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 p-6 text-center">등록된 일정이 없습니다.</p>
+            )}
+          </div>
         </div>
-        <div className="p-2">
-          {latestNotices && latestNotices.length > 0 ? (
-            <ul>
-              {latestNotices.map((n) => (
-                <li key={n.id} className="px-3 py-2">
-                  <Link
-                    href={`/community/${n.id}`}
-                    className="block w-full whitespace-nowrap overflow-hidden text-ellipsis hover:underline"
-                  >
-                    {n.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500 p-2">등록된 공지사항이 없습니다.</p>
-          )}
+
+        {/* 오늘의 메뉴 */}
+        <div className="rounded-2xl shadow-lg bg-white mb-6 overflow-hidden">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-green-100">
+            <h5 className="font-bold text-gray-800 flex items-center gap-2">
+              <span className="text-xl">🍽️</span>
+              <span>오늘의 메뉴</span>
+            </h5>
+          </div>
+          <div className="p-6">
+            {menu ? (
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="p-4 rounded-xl bg-gradient-to-br from-yellow-50 to-orange-50 border border-orange-200">
+                  <h6 className="text-orange-600 font-bold mb-2 text-sm">아침</h6>
+                  {menu.breakfast ? (
+                    <>
+                      <p className="font-bold text-gray-800">{menu.breakfast.mainDish}</p>
+                      {menu.breakfast.sideDishes && (
+                        <small className="text-gray-500 text-xs">{menu.breakfast.sideDishes}</small>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-gray-400">-</p>
+                  )}
+                </div>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200">
+                  <h6 className="text-green-600 font-bold mb-2 text-sm">점심</h6>
+                  {menu.lunch ? (
+                    <>
+                      <p className="font-bold text-gray-800">{menu.lunch.mainDish}</p>
+                      {menu.lunch.sideDishes && (
+                        <small className="text-gray-500 text-xs">{menu.lunch.sideDishes}</small>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-gray-400">-</p>
+                  )}
+                </div>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-200">
+                  <h6 className="text-indigo-600 font-bold mb-2 text-sm">저녁</h6>
+                  {menu.dinner ? (
+                    <>
+                      <p className="font-bold text-gray-800">{menu.dinner.mainDish}</p>
+                      {menu.dinner.sideDishes && (
+                        <small className="text-gray-500 text-xs">{menu.dinner.sideDishes}</small>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-gray-400">-</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">오늘의 메뉴 정보가 없습니다.</p>
+            )}
+          </div>
         </div>
-        <div className="p-4 text-right">
-          <Link href="/community" className="text-sm text-gray-600 hover:text-gray-800">
-            더보기 →
-          </Link>
+
+        {/* 차량 안내 카드 */}
+        <div className="rounded-2xl shadow-lg bg-white mb-6 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-4 border-b border-blue-100">
+            <h5 className="font-bold text-gray-800 flex items-center gap-2">
+              <span className="text-xl">🚌</span>
+              <span>차량 안내</span>
+            </h5>
+          </div>
+          <div className="p-6">
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
+              <span className="text-3xl">🚌</span>
+              <span className="text-gray-700 text-sm flex-1">
+                {transportationInfo ?? "차량 정보가 곧 업데이트될 예정입니다."}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 최신 공지 */}
+        <div className="rounded-2xl shadow-lg bg-white overflow-hidden">
+          <div className="bg-gradient-to-r from-pink-50 to-rose-50 px-6 py-4 border-b border-pink-100">
+            <h5 className="font-bold text-gray-800 flex items-center gap-2">
+              <span className="text-xl">📢</span>
+              <span>최신 공지</span>
+            </h5>
+          </div>
+          <div className="p-2">
+            {latestNotices && latestNotices.length > 0 ? (
+              <ul className="divide-y divide-gray-100">
+                {latestNotices.map((n) => (
+                  <li key={n.id} className="px-4 py-3 hover:bg-pink-50 transition-colors">
+                    <Link
+                      href={`/community/${n.id}`}
+                      className="block w-full whitespace-nowrap overflow-hidden text-ellipsis hover:text-pink-600 font-medium transition-colors"
+                    >
+                      {n.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 p-6 text-center">등록된 공지사항이 없습니다.</p>
+            )}
+          </div>
+          <div className="px-6 py-4 bg-gray-50 text-right border-t border-gray-100">
+            <Link href="/community" className="text-sm text-pink-600 hover:text-pink-800 font-semibold transition-colors">
+              더보기 →
+            </Link>
+          </div>
         </div>
       </div>
     </main>
