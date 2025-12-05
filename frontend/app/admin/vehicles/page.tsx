@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Modal from "@/components/Modal";
 
 interface VehicleItem {
   id: number;
@@ -12,6 +13,15 @@ interface VehicleItem {
   departureTime: string;
   departureLoc: string;
   memo: string;
+}
+
+interface ModalState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: "success" | "error" | "warning" | "info";
+  showConfirmButton?: boolean;
+  onConfirm?: () => void;
 }
 
 export default function VehiclesAdminPage() {
@@ -33,6 +43,12 @@ export default function VehiclesAdminPage() {
     memo: "",
   });
   const [editingVehicleId, setEditingVehicleId] = useState<number | null>(null);
+  const [modal, setModal] = useState<ModalState>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
   const getApiUrl = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -125,6 +141,26 @@ export default function VehiclesAdminPage() {
   };
 
   const handleSave = async () => {
+    if (!vehicleForm.name.trim()) {
+      setModal({
+        isOpen: true,
+        title: "입력 오류",
+        message: "차량명은 필수 항목입니다.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (!vehicleForm.capacity || vehicleForm.capacity < 1) {
+      setModal({
+        isOpen: true,
+        title: "입력 오류",
+        message: "정원은 1명 이상이어야 합니다.",
+        type: "error",
+      });
+      return;
+    }
+
     const token = localStorage.getItem("accessToken");
     if (!token) {
       setError("인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.");
@@ -150,50 +186,92 @@ export default function VehiclesAdminPage() {
       });
 
       if (response.ok) {
+        setModal({
+          isOpen: true,
+          title: "성공",
+          message: editingVehicleId ? "차량이 수정되었습니다." : "차량이 추가되었습니다.",
+          type: "success",
+        });
         await loadVehicles();
         handleCancel();
       } else {
-        setError("저장하는데 실패했습니다.");
+        setModal({
+          isOpen: true,
+          title: "오류",
+          message: "차량 저장에 실패했습니다.",
+          type: "error",
+        });
       }
     } catch (err) {
-      setError("네트워크 오류가 발생했습니다.");
+      setModal({
+        isOpen: true,
+        title: "오류",
+        message: "차량 저장 중 오류가 발생했습니다.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("정말로 삭제하시겠습니까?")) return;
+    setModal({
+      isOpen: true,
+      title: "삭제 확인",
+      message: "정말로 이 차량을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+      type: "warning",
+      showConfirmButton: true,
+      onConfirm: async () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          setError("인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.");
+          return;
+        }
 
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      setError("인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.");
-      return;
-    }
+        try {
+          setLoading(true);
+          setError(null);
+          const response = await fetch(`${getApiUrl()}/admin/vehicles/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch(`${getApiUrl()}/admin/vehicles/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+          setModal({ isOpen: false, title: "", message: "", type: "info" });
 
-      if (response.ok) {
-        await loadVehicles();
-      } else {
-        setError("삭제하는데 실패했습니다.");
-      }
-    } catch (err) {
-      setError("네트워크 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
+          if (response.ok) {
+            setModal({
+              isOpen: true,
+              title: "성공",
+              message: "차량이 삭제되었습니다.",
+              type: "success",
+            });
+            await loadVehicles();
+          } else {
+            setModal({
+              isOpen: true,
+              title: "오류",
+              message: "차량 삭제에 실패했습니다.",
+              type: "error",
+            });
+          }
+        } catch (err) {
+          setModal({
+            isOpen: true,
+            title: "오류",
+            message: "차량 삭제 중 오류가 발생했습니다.",
+            type: "error",
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   useEffect(() => {
     loadVehicles();
-  }, [getApiUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="p-8">
@@ -408,6 +486,19 @@ export default function VehiclesAdminPage() {
             </div>
           </div>
         </div>
+
+      {/* 모달 */}
+      <Modal
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        onConfirm={modal.onConfirm}
+        confirmText="삭제"
+        showConfirmButton={modal.showConfirmButton}
+      />
       </div>
+
   );
 }

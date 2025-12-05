@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Modal from "@/components/Modal";
 
 interface PostItem {
   id: number;
@@ -14,6 +15,15 @@ interface PostItem {
   };
 }
 
+interface ModalState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: "success" | "error" | "warning" | "info";
+  showConfirmButton?: boolean;
+  onConfirm?: () => void;
+}
+
 export default function PostsAdminPage() {
   const router = useRouter();
   const [posts, setPosts] = useState<PostItem[]>([]);
@@ -22,6 +32,12 @@ export default function PostsAdminPage() {
   const [searchText, setSearchText] = useState("");
   const [sortKey, setSortKey] = useState<keyof PostItem>("id");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [modal, setModal] = useState<ModalState>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
   const getApiUrl = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -105,24 +121,48 @@ export default function PostsAdminPage() {
   };
 
   const deletePost = async (id: number) => {
-    if (!confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
+    setModal({
+      isOpen: true,
+      title: "삭제 확인",
+      message: "정말 이 게시글을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+      type: "warning",
+      showConfirmButton: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`${getApiUrl()}/admin/posts/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+          });
 
-    try {
-      const response = await fetch(`${getApiUrl()}/admin/posts/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-      });
+          setModal({ isOpen: false, title: "", message: "", type: "info" });
 
-      if (response.ok) {
-        alert("게시글이 삭제되었습니다.");
-        loadPosts();
-      } else {
-        alert("게시글 삭제 실패");
-      }
-    } catch (error) {
-      console.error("게시글 삭제 실패:", error);
-      alert("게시글 삭제 중 오류 발생");
-    }
+          if (response.ok) {
+            setModal({
+              isOpen: true,
+              title: "성공",
+              message: "게시글이 삭제되었습니다.",
+              type: "success",
+            });
+            loadPosts();
+          } else {
+            setModal({
+              isOpen: true,
+              title: "오류",
+              message: "게시글 삭제에 실패했습니다.",
+              type: "error",
+            });
+          }
+        } catch (error) {
+          console.error("게시글 삭제 실패:", error);
+          setModal({
+            isOpen: true,
+            title: "오류",
+            message: "게시글 삭제 중 오류가 발생했습니다.",
+            type: "error",
+          });
+        }
+      },
+    });
   };
 
   useEffect(() => {
@@ -131,36 +171,7 @@ export default function PostsAdminPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      {/* 사이드바 */}
-      <div className="w-64 bg-gray-800 border-r border-gray-700 p-6 fixed h-screen overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-8">관리 메뉴</h2>
-        <nav className="space-y-2">
-          {[
-            { href: "/admin", label: "대시보드", icon: "📊" },
-            { href: "/admin/users", label: "사용자 관리", icon: "👥" },
-            { href: "/admin/posts", label: "게시글 관리", icon: "📝", active: true },
-            { href: "/admin/menus", label: "메뉴 관리", icon: "🍽️" },
-            { href: "/admin/schedules", label: "스케줄 관리", icon: "📅" },
-            { href: "/admin/rooms", label: "숙소 관리", icon: "🏨" },
-          ].map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={`block px-4 py-3 rounded-lg transition-colors ${
-                item.active
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-700 text-gray-300 hover:text-white"
-              }`}
-            >
-              <span className="mr-2">{item.icon}</span>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </div>
-
-      {/* 메인 콘텐츠 */}
+    <div className="p-8">
       <div className="max-w-full">
         <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700">
           <div className="p-8 space-y-6">
@@ -302,6 +313,17 @@ export default function PostsAdminPage() {
             </div>
           </div>
         </div>
+      {/* 모달 */}
+      <Modal
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        onConfirm={modal.onConfirm}
+        confirmText="삭제"
+        showConfirmButton={modal.showConfirmButton}
+      />
       </div>
   );
 }

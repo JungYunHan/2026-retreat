@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Modal from "@/components/Modal";
 
 interface RoomItem {
   id: number;
@@ -9,6 +10,15 @@ interface RoomItem {
   genderType?: string;
   location?: string;
   memo?: string;
+}
+
+interface ModalState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: "success" | "error" | "warning" | "info";
+  showConfirmButton?: boolean;
+  onConfirm?: () => void;
 }
 
 export default function RoomsAdminPage() {
@@ -26,6 +36,12 @@ export default function RoomsAdminPage() {
     location: "",
   });
   const [editingRoomId, setEditingRoomId] = useState<number | null>(null);
+  const [modal, setModal] = useState<ModalState>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
   const getApiUrl = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -88,8 +104,23 @@ export default function RoomsAdminPage() {
   };
 
   const saveRoom = async () => {
-    if (!roomForm.name) {
-      alert("숙소명을 입력해주세요.");
+    if (!roomForm.name.trim()) {
+      setModal({
+        isOpen: true,
+        title: "입력 오류",
+        message: "숙소명은 필수 항목입니다.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (!roomForm.capacity || roomForm.capacity < 1) {
+      setModal({
+        isOpen: true,
+        title: "입력 오류",
+        message: "정원은 1명 이상이어야 합니다.",
+        type: "error",
+      });
       return;
     }
 
@@ -116,43 +147,88 @@ export default function RoomsAdminPage() {
       });
 
       if (response.ok) {
+        setModal({
+          isOpen: true,
+          title: "성공",
+          message: editingRoomId ? "숙소가 수정되었습니다." : "숙소가 추가되었습니다.",
+          type: "success",
+        });
         setRoomForm({ id: 0, name: "", capacity: 2, genderType: "", location: "" });
         setEditingRoomId(null);
         loadRooms();
       } else {
-        setError(`숙소 ${editingRoomId ? "수정" : "추가"} 실패: ${response.statusText}`);
+        setModal({
+          isOpen: true,
+          title: "오류",
+          message: "숙소 저장에 실패했습니다.",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("숙소 저장 실패:", error);
-      setError("숙소 저장 중 오류가 발생했습니다.");
+      setModal({
+        isOpen: true,
+        title: "오류",
+        message: "숙소 저장 중 오류가 발생했습니다.",
+        type: "error",
+      });
     }
   };
 
   const deleteRoom = async (id: number) => {
-    if (!confirm("정말 이 숙소를 삭제하시겠습니까?")) return;
+    setModal({
+      isOpen: true,
+      title: "삭제 확인",
+      message: "정말 이 숙소를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+      type: "warning",
+      showConfirmButton: true,
+      onConfirm: async () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          setModal({
+            isOpen: true,
+            title: "오류",
+            message: "인증 토큰이 없습니다.",
+            type: "error",
+          });
+          return;
+        }
 
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      setError("인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.");
-      return;
-    }
+        try {
+          const response = await fetch(`${getApiUrl()}/admin/rooms/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
-    try {
-      setError(null);
-      const response = await fetch(`${getApiUrl()}/admin/rooms/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+          setModal({ isOpen: false, title: "", message: "", type: "info" });
 
-      if (response.ok) {
-        loadRooms();
-      } else {
-        setError(`숙소 삭제 실패: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error("숙소 삭제 실패:", error);
-      setError("숙소 삭제 중 오류가 발생했습니다.");
-    }
+          if (response.ok) {
+            setModal({
+              isOpen: true,
+              title: "성공",
+              message: "숙소가 삭제되었습니다.",
+              type: "success",
+            });
+            loadRooms();
+          } else {
+            setModal({
+              isOpen: true,
+              title: "오류",
+              message: "숙소 삭제에 실패했습니다.",
+              type: "error",
+            });
+          }
+        } catch (error) {
+          console.error("숙소 삭제 실패:", error);
+          setModal({
+            isOpen: true,
+            title: "오류",
+            message: "숙소 삭제 중 오류가 발생했습니다.",
+            type: "error",
+          });
+        }
+      },
+    });
   };
 
   useEffect(() => {
@@ -355,6 +431,17 @@ export default function RoomsAdminPage() {
             </div>
           </div>
         </div>
+      {/* 모달 */}
+      <Modal
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        onConfirm={modal.onConfirm}
+        confirmText="삭제"
+        showConfirmButton={modal.showConfirmButton}
+      />
       </div>
   );
 }

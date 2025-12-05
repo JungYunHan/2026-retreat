@@ -36,3 +36,9 @@ out/
 ### VS Code ###
 .vscode/
 .env
+
+### next.js ###
+src/main/resources/static/
+
+## macOS ##
+.DS_Store

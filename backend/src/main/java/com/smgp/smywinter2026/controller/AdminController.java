@@ -7,11 +7,18 @@ import com.smgp.smywinter2026.model.dto.RoomDto;
 import com.smgp.smywinter2026.model.dto.RoomUserDto;
 import com.smgp.smywinter2026.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +38,7 @@ public class AdminController {
     private final MenuRepository menuRepository;
     private final ScheduleRepository scheduleRepository;
     private final RoomRepository roomRepository;
+    private final VehicleRepository vehicleRepository;
     private final PasswordEncoder passwordEncoder;
 
     // ==================== 사용자 관리 ====================
@@ -109,6 +117,107 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("사용자가 삭제되었습니다."));
     }
 
+    /**
+     * CSV 파일로 사용자 일괄 업로드
+     * POST /api/admin/users/bulk-upload
+     */
+    @PostMapping("/users/bulk-upload")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> bulkUploadUsers(@RequestParam("file") MultipartFile file) {
+        try {
+            List<User> successCount = new ArrayList<>();
+            List<String> errors = new ArrayList<>();
+            
+            InputStreamReader reader = new InputStreamReader(file.getInputStream(), "UTF-8");
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreEmptyLines());
+            
+            for (CSVRecord record : csvParser) {
+                try {
+                    // 헤더에서 BOM 제거 후 필드 접근
+                    String username = record.get("username").trim();
+                    String password = record.get("password").trim();
+                    String name = record.get("name").trim();
+                    String email = record.get("email").trim();
+                    String phoneNumber = record.get("phoneNumber").trim();
+                    String teamName = record.get("teamName").trim();
+                    String position = record.get("position").trim();
+                    String gender = record.get("gender").trim();
+                    
+                    User user = new User();
+                    user.setUsername(username);
+                    user.setPassword(passwordEncoder.encode(password));
+                    user.setName(name);
+                    user.setEmail(email);
+                    user.setPhoneNumber(phoneNumber);
+                    user.setTeamName(teamName);
+                    user.setPosition(position);
+                    user.setGender(gender);
+                    user.setRole("USER");
+                    
+                    userRepository.save(user);
+                    successCount.add(user);
+                } catch (Exception e) {
+                    errors.add("행 " + record.getRecordNumber() + ": " + e.getMessage());
+                }
+            }
+            csvParser.close();
+            
+            return ResponseEntity.ok(ApiResponse.success(Map.of(
+                "successCount", successCount.size(),
+                "totalCount", successCount.size() + errors.size(),
+                "errors", errors
+            )));
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("CSV 파일 처리 실패: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 사용자 일괄 삭제
+     * DELETE /api/admin/users/bulk-delete
+     */
+    @PostMapping("/users/bulk-delete")
+    public ResponseEntity<ApiResponse<String>> bulkDeleteUsers(@RequestBody List<Long> userIds) {
+        userRepository.deleteAllById(userIds);
+        return ResponseEntity.ok(ApiResponse.success(userIds.size() + "명의 사용자가 삭제되었습니다."));
+    }
+
+    /**
+     * 사용자 일괄 수정
+     * PUT /api/admin/users/bulk-update
+     */
+    @PutMapping("/users/bulk-update")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> bulkUpdateUsers(
+            @RequestBody List<Map<String, Object>> updateList) {
+        List<String> errors = new ArrayList<>();
+        int successCount = 0;
+        
+        for (Map<String, Object> update : updateList) {
+            try {
+                Long userId = Long.parseLong(update.get("id").toString());
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                
+                if (update.containsKey("name")) user.setName(update.get("name").toString());
+                if (update.containsKey("email")) user.setEmail(update.get("email").toString());
+                if (update.containsKey("phoneNumber")) user.setPhoneNumber(update.get("phoneNumber").toString());
+                if (update.containsKey("teamName")) user.setTeamName(update.get("teamName").toString());
+                if (update.containsKey("position")) user.setPosition(update.get("position").toString());
+                if (update.containsKey("gender")) user.setGender(update.get("gender").toString());
+                
+                userRepository.save(user);
+                successCount++;
+            } catch (Exception e) {
+                errors.add("ID " + update.get("id") + ": " + e.getMessage());
+            }
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success(Map.of(
+            "successCount", successCount,
+            "totalCount", updateList.size(),
+            "errors", errors
+        )));
+    }
+
     // ==================== 게시글 관리 ====================
 
     /**
@@ -119,6 +228,40 @@ public class AdminController {
     public ResponseEntity<ApiResponse<List<Post>>> getAllPosts() {
         List<Post> posts = postRepository.findAll();
         return ResponseEntity.ok(ApiResponse.success(posts));
+    }
+
+    /**
+     * 게시글 생성
+     * POST /api/admin/posts
+     */
+    @PostMapping("/posts")
+    public ResponseEntity<ApiResponse<Post>> createPost(@RequestBody Post post) {
+        Post savedPost = postRepository.save(post);
+        return ResponseEntity.ok(ApiResponse.success(savedPost));
+    }
+
+    /**
+     * 게시글 수정
+     * PUT /api/admin/posts/{id}
+     */
+    @PutMapping("/posts/{id}")
+    public ResponseEntity<ApiResponse<Post>> updatePost(
+            @PathVariable Long id,
+            @RequestBody Post postDetails) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+
+        if (postDetails.getTitle() != null)
+            post.setTitle(postDetails.getTitle());
+        if (postDetails.getContent() != null)
+            post.setContent(postDetails.getContent());
+        if (postDetails.getCategory() != null)
+            post.setCategory(postDetails.getCategory());
+        if (postDetails.getUser() != null)
+            post.setUser(postDetails.getUser());
+
+        Post updatedPost = postRepository.save(post);
+        return ResponseEntity.ok(ApiResponse.success(updatedPost));
     }
 
     /**
@@ -355,7 +498,72 @@ public class AdminController {
                 "totalPosts", postRepository.count(),
                 "totalMenus", menuRepository.count(),
                 "totalSchedules", scheduleRepository.count(),
-                "totalRooms", roomRepository.count());
+                "totalRooms", roomRepository.count(),
+                "totalVehicles", vehicleRepository.count());
         return ResponseEntity.ok(ApiResponse.success(stats));
+    }
+
+    // ==================== 차량 관리 ====================
+
+    /**
+     * 모든 차량 조회
+     * GET /api/admin/vehicles
+     */
+    @GetMapping("/vehicles")
+    public ResponseEntity<ApiResponse<List<Vehicle>>> getAllVehicles() {
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+        return ResponseEntity.ok(ApiResponse.success(vehicles));
+    }
+
+    /**
+     * 차량 생성
+     * POST /api/admin/vehicles
+     */
+    @PostMapping("/vehicles")
+    public ResponseEntity<ApiResponse<Vehicle>> createVehicle(@RequestBody Vehicle vehicle) {
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+        return ResponseEntity.ok(ApiResponse.success(savedVehicle));
+    }
+
+    /**
+     * 차량 수정
+     * PUT /api/admin/vehicles/{id}
+     */
+    @PutMapping("/vehicles/{id}")
+    public ResponseEntity<ApiResponse<Vehicle>> updateVehicle(
+            @PathVariable Integer id,
+            @RequestBody Vehicle vehicleDetails) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("차량을 찾을 수 없습니다."));
+
+        if (vehicleDetails.getName() != null)
+            vehicle.setName(vehicleDetails.getName());
+        if (vehicleDetails.getVehicleNumber() != null)
+            vehicle.setVehicleNumber(vehicleDetails.getVehicleNumber());
+        if (vehicleDetails.getCapacity() != null)
+            vehicle.setCapacity(vehicleDetails.getCapacity());
+        if (vehicleDetails.getDriverName() != null)
+            vehicle.setDriverName(vehicleDetails.getDriverName());
+        if (vehicleDetails.getDriverPhone() != null)
+            vehicle.setDriverPhone(vehicleDetails.getDriverPhone());
+        if (vehicleDetails.getDepartureTime() != null)
+            vehicle.setDepartureTime(vehicleDetails.getDepartureTime());
+        if (vehicleDetails.getDepartureLoc() != null)
+            vehicle.setDepartureLoc(vehicleDetails.getDepartureLoc());
+        if (vehicleDetails.getMemo() != null)
+            vehicle.setMemo(vehicleDetails.getMemo());
+
+        Vehicle updatedVehicle = vehicleRepository.save(vehicle);
+        return ResponseEntity.ok(ApiResponse.success(updatedVehicle));
+    }
+
+    /**
+     * 차량 삭제
+     * DELETE /api/admin/vehicles/{id}
+     */
+    @DeleteMapping("/vehicles/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteVehicle(@PathVariable Integer id) {
+        vehicleRepository.deleteById(id);
+        return ResponseEntity.ok(ApiResponse.success("차량이 삭제되었습니다."));
     }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Modal from "@/components/Modal";
 
 interface MenuItem {
   id: number;
@@ -8,6 +9,15 @@ interface MenuItem {
   mealType: "BREAKFAST" | "LUNCH" | "DINNER";
   mainDish?: string;
   sideDishes?: string;
+}
+
+interface ModalState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: "success" | "error" | "warning" | "info";
+  showConfirmButton?: boolean;
+  onConfirm?: () => void;
 }
 
 export default function MenusAdminPage() {
@@ -22,6 +32,12 @@ export default function MenusAdminPage() {
     mealType: "BREAKFAST",
   });
   const [editingMenuId, setEditingMenuId] = useState<number | null>(null);
+  const [modal, setModal] = useState<ModalState>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
   const getApiUrl = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -75,8 +91,23 @@ export default function MenusAdminPage() {
   };
 
   const saveMenu = async () => {
-    if (!menuForm.menuDate) {
-      alert("날짜를 입력하세요.");
+    if (!menuForm.menuDate.trim()) {
+      setModal({
+        isOpen: true,
+        title: "입력 오류",
+        message: "날짜는 필수 항목입니다.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (!menuForm.mainDish?.trim()) {
+      setModal({
+        isOpen: true,
+        title: "입력 오류",
+        message: "메인 메뉴는 필수 항목입니다.",
+        type: "error",
+      });
       return;
     }
 
@@ -94,31 +125,77 @@ export default function MenusAdminPage() {
       });
 
       if (response.ok) {
-        alert(editingMenuId ? "메뉴가 수정되었습니다." : "메뉴가 추가되었습니다.");
+        setModal({
+          isOpen: true,
+          title: "성공",
+          message: editingMenuId ? "메뉴가 수정되었습니다." : "메뉴가 추가되었습니다.",
+          type: "success",
+        });
         setMenuForm({ id: 0, menuDate: "", mealType: "BREAKFAST" });
         setEditingMenuId(null);
         loadMenus();
+      } else {
+        setModal({
+          isOpen: true,
+          title: "오류",
+          message: "메뉴 저장에 실패했습니다.",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("메뉴 저장 실패:", error);
+      setModal({
+        isOpen: true,
+        title: "오류",
+        message: "메뉴 저장 중 오류가 발생했습니다.",
+        type: "error",
+      });
     }
   };
 
   const deleteMenu = async (id: number) => {
-    if (!confirm("정말 이 메뉴를 삭제하시겠습니까?")) return;
+    setModal({
+      isOpen: true,
+      title: "삭제 확인",
+      message: "정말 이 메뉴를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+      type: "warning",
+      showConfirmButton: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`${getApiUrl()}/admin/menus/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+          });
 
-    try {
-      const response = await fetch(`${getApiUrl()}/admin/menus/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-      });
+          setModal({ isOpen: false, title: "", message: "", type: "info" });
 
-      if (response.ok) {
-        loadMenus();
-      }
-    } catch (error) {
-      console.error("메뉴 삭제 실패:", error);
-    }
+          if (response.ok) {
+            setModal({
+              isOpen: true,
+              title: "성공",
+              message: "메뉴가 삭제되었습니다.",
+              type: "success",
+            });
+            loadMenus();
+          } else {
+            setModal({
+              isOpen: true,
+              title: "오류",
+              message: "메뉴 삭제에 실패했습니다.",
+              type: "error",
+            });
+          }
+        } catch (error) {
+          console.error("메뉴 삭제 실패:", error);
+          setModal({
+            isOpen: true,
+            title: "오류",
+            message: "메뉴 삭제 중 오류가 발생했습니다.",
+            type: "error",
+          });
+        }
+      },
+    });
   };
 
   useEffect(() => {
@@ -310,6 +387,17 @@ export default function MenusAdminPage() {
             </div>
           </div>
         </div>
+    {/* 모달 */}
+      <Modal
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        onConfirm={modal.onConfirm}
+        confirmText="삭제"
+        showConfirmButton={modal.showConfirmButton}
+      />
       </div>
   );
 }
