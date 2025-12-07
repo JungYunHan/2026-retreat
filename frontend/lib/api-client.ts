@@ -66,16 +66,36 @@ class ApiClient {
         headers,
       });
 
-      const data = await response.json();
+      // 응답 Content-Type 확인
+      const contentType = response.headers.get('content-type');
+      
+      // JSON 응답 처리
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
 
-      if (!response.ok) {
+        if (!response.ok) {
+          return {
+            success: false,
+            error: data.error || `HTTP ${response.status}`,
+          };
+        }
+
+        return data;
+      } else {
+        // JSON이 아닌 응답 (HTML, 등)
+        if (!response.ok) {
+          return {
+            success: false,
+            error: `HTTP ${response.status}: 서버에서 올바른 응답을 반환하지 못했습니다.`,
+          };
+        }
+
+        // OK 상태지만 JSON이 아닌 경우
         return {
           success: false,
-          error: data.error || `HTTP ${response.status}`,
+          error: '서버에서 올바른 형식의 응답을 반환하지 못했습니다.',
         };
       }
-
-      return data;
     } catch (error) {
       return {
         success: false,

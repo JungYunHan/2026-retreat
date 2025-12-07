@@ -3,23 +3,29 @@
 import { pageApi } from "@/lib/api";
 import { authApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 export default function MyPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [tokenError, setTokenError] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
   
   // 로그인 체크
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('accessToken');
       if (!token) {
+        setTokenError(true);
         router.replace('/login');
+      } else {
+        setHasToken(true);
       }
     }
   }, [router]);
 
-  const { data: userData, isLoading: loading } = useQuery({
+  const { data: userData, isLoading: loading, error: queryError } = useQuery({
     queryKey: ['mypage'],
     queryFn: async () => {
       const res = await pageApi.getMyPageData();
@@ -28,16 +34,39 @@ export default function MyPage() {
       }
       // API 호출 실패 시에도 로그인 페이지로 리다이렉션
       if (!res.success) {
+        console.error('마이페이지 데이터 로드 실패:', res.error);
+        setTokenError(true);
         router.replace('/login');
       }
       return null;
     },
+    enabled: hasToken,
+    staleTime: 0, // 항상 최신 데이터 가져오기
   });
 
   const handleLogout = () => {
     authApi.logout();
+    // 캐시 초기화
+    queryClient.clear();
     router.push("/login");
   };
+
+  if (tokenError || (queryError && !loading)) {
+    return (
+      <main className="min-h-screen px-4 py-6 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 font-semibold mb-4">데이터를 불러올 수 없습니다.</p>
+          <p className="text-gray-500 text-sm mb-6">다시 로그인 해주세요.</p>
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            로그인 페이지로 이동
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   if (loading) {
     return (
@@ -50,7 +79,15 @@ export default function MyPage() {
   if (!userData) {
     return (
       <main className="min-h-screen px-4 py-6 flex items-center justify-center">
-        <p className="text-gray-500">데이터를 불러올 수 없습니다.</p>
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">데이터를 불러올 수 없습니다.</p>
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            로그인 페이지로 이동
+          </button>
+        </div>
       </main>
     );
   }

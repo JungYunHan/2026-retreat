@@ -56,6 +56,10 @@ export const authApi = {
     
     if (response.success && response.data) {
       apiClient.setToken(response.data.accessToken);
+      // 사용자명 저장
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('username', credentials.username);
+      }
     }
     
     return response;
@@ -66,6 +70,10 @@ export const authApi = {
    */
   logout: () => {
     apiClient.clearToken();
+    // 로그아웃 시 저장된 정보 삭제
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('username');
+    }
   },
 };
 

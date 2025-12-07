@@ -16,7 +16,8 @@ export default function LoginPage() {
       authApi.login(credentials),
     onSuccess: (response) => {
       if (response.success) {
-        router.replace('/');
+        // 로그인 성공 후 마이페이지로 이동
+        router.replace('/mypage');
       } else {
         setError(response.error || '로그인에 실패했습니다.');
       }

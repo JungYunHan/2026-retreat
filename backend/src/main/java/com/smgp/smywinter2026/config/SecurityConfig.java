@@ -2,9 +2,11 @@ package com.smgp.smywinter2026.config;
 
 import com.smgp.smywinter2026.jwt.JwtAuthenticationFilter;
 import com.smgp.smywinter2026.jwt.JwtTokenProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,6 +22,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.util.List;
 
@@ -48,7 +52,32 @@ public class SecurityConfig {
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                                // 5. 요청별 인가 규칙 설정
+                                // 5. 인증 실패 처리
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint((request, response, authException) -> {
+                                                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                                                        response.setStatus(401);
+                                                        
+                                                        Map<String, Object> errorResponse = new HashMap<>();
+                                                        errorResponse.put("success", false);
+                                                        errorResponse.put("error", "인증이 필요합니다. 로그인해주세요.");
+                                                        
+                                                        ObjectMapper mapper = new ObjectMapper();
+                                                        response.getWriter().write(mapper.writeValueAsString(errorResponse));
+                                                })
+                                                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                                                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                                                        response.setStatus(403);
+                                                        
+                                                        Map<String, Object> errorResponse = new HashMap<>();
+                                                        errorResponse.put("success", false);
+                                                        errorResponse.put("error", "접근 권한이 없습니다.");
+                                                        
+                                                        ObjectMapper mapper = new ObjectMapper();
+                                                        response.getWriter().write(mapper.writeValueAsString(errorResponse));
+                                                }))
+
+                                // 6. 요청별 인가 규칙 설정
                                 .authorizeHttpRequests(auth -> auth
                                                 // 정적 리소스와 루트 접근 허용
                                                 .requestMatchers(
@@ -73,7 +102,7 @@ public class SecurityConfig {
                                                 // API 이외의 나머지(정적/기타)는 허용
                                                 .anyRequest().permitAll());
 
-                // 6. JWT 인증 필터 추가
+                // 7. JWT 인증 필터 추가
                 http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
                                 UsernamePasswordAuthenticationFilter.class);
 

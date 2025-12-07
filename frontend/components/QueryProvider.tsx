@@ -12,6 +12,8 @@ export default function QueryProvider({ children }: { children: ReactNode }) {
             staleTime: 60 * 1000, // 1분
             retry: 1,
             refetchOnWindowFocus: false,
+            // 민감한 데이터는 매번 새로 가져오기
+            gcTime: 5 * 60 * 1000, // 5분 (이전 cacheTime)
           },
         },
       })
