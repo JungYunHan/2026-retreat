@@ -33,11 +33,6 @@ spring:
   config:
     activate:
       on-profile: dev
-  
-  # JWT 설정 (dev 프로필)
-  jwt:
-    secret: your-very-secret-key-that-is-long-enough-to-be-secure-smy-winter-2026-dev
-    expiration-ms: 3600000 # 1시간
 
   # PostgreSQL Datasource (개발용)
   datasource:
@@ -60,16 +55,21 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  
+
   # Thymeleaf (개발용)
   thymeleaf:
     cache: false # Thymeleaf 템플릿 캐시 비활성화 (수정 시 바로 반영)
-  
+
   # 정적 리소스 캐시 비활성화 (개발용)
   web:
     resources:
       cache:
         period: 0 # 브라우저가 CSS, JS 등을 캐시하지 않도록 설정
+
+# JWT 설정 (dev 프로필)
+jwt:
+  secret: your-very-secret-key-that-is-long-enough-to-be-secure-smy-winter-2026-dev
+  expiration-ms: 3600000 # 1시간
 
 ---
 # --- (YAML 문서 분리 기호) ---
@@ -82,11 +82,6 @@ spring:
   config:
     activate:
       on-profile: prod
-  
-  # JWT 설정 (prod 프로필)
-  jwt:
-    secret: ${JWT_SECRET} # [중요] 운영 환경에서는 환경 변수에서 비밀키를 가져옴
-    expiration-ms: 3600000 # 1시간
 
   # Render 환경 변수(PORT)를 사용하도록 서버 포트 설정
   server:
@@ -113,3 +108,8 @@ spring:
       hibernate:
         format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# JWT 설정 (prod 프로필)
+jwt:
+  secret: ${JWT_SECRET} # [중요] 운영 환경에서는 환경 변수에서 비밀키를 가져옴
+  expiration-ms: 3600000 # 1시간

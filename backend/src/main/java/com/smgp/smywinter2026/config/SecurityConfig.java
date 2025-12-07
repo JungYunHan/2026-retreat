@@ -113,9 +113,10 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-                // Next.js 개발 서버 주소 + Render 배포 URL 허용
+                // Next.js 개발 서버 주소 + Render 배포 URL + Admin 대시보드 허용
                 configuration.setAllowedOrigins(List.of(
                                 "http://localhost:3000",
+                                "http://localhost:3001",
                                 "https://smy-winter-2026.onrender.com"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));

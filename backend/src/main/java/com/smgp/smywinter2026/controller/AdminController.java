@@ -118,6 +118,29 @@ public class AdminController {
     }
 
     /**
+     * 비밀번호 초기화
+     * POST /api/admin/users/{id}/reset-password
+     */
+    @PostMapping("/users/{id}/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        String newPassword = request.get("newPassword");
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("새 비밀번호를 입력해주세요."));
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordChangeRequired(true);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(ApiResponse.success("비밀번호가 초기화되었습니다."));
+    }
+
+    /**
      * CSV 파일로 사용자 일괄 업로드
      * POST /api/admin/users/bulk-upload
      */
