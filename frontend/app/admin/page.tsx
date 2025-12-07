@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import { apiClient } from "@/lib/api-client";
 
 interface DashboardStats {
-  totalVehicles: any;
+  totalVehicles: number;
   totalUsers: number;
   totalPosts: number;
   totalMenus: number;
@@ -23,33 +24,22 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(false);
 
-  const getApiUrl = useCallback(() => {
-    if (typeof window !== "undefined") {
-      const host = window.location.hostname;
-      if (host === "localhost" || host === "127.0.0.1") return "http://localhost:8080/api";
-    }
-    return "http://localhost:8080/api";
-  }, []);
-
   const loadStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${getApiUrl()}/admin/stats`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-      });
-      if (response.ok) {
-        const result = await response.json();
-        // API 응답이 ApiResponse 래퍼로 감싸져 있음
-        setStats(result.data || {
-          totalUsers: 0,
-          totalPosts: 0,
-          totalMenus: 0,
-          totalSchedules: 0,
-          totalRooms: 0,
-          totalVehicles: 0,
+      const result = await apiClient.get<DashboardStats>(`/admin/stats`);
+      if (result.success && result.data) {
+        const data = result.data as Partial<DashboardStats>;
+        setStats({
+          totalUsers: data.totalUsers ?? 0,
+          totalPosts: data.totalPosts ?? 0,
+          totalMenus: data.totalMenus ?? 0,
+          totalSchedules: data.totalSchedules ?? 0,
+          totalRooms: data.totalRooms ?? 0,
+          totalVehicles: data.totalVehicles ?? 0,
         });
       } else {
-        console.error("통계 로드 실패:", response.statusText);
+        console.error("통계 로드 실패:", result.error || result.message);
       }
     } catch (error) {
       console.error("통계 로드 실패:", error);
@@ -60,7 +50,6 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const adminItems = [

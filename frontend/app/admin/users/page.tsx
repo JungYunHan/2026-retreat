@@ -23,6 +23,12 @@ interface ModalState {
   onConfirm?: () => void;
 }
 
+interface UploadResult {
+  successCount: number;
+  totalCount: number;
+  errors?: string[];
+}
+
 export default function UsersAdminPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
@@ -36,7 +42,7 @@ export default function UsersAdminPage() {
   const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [uploadResult, setUploadResult] = useState<any>(null);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     title: "",
@@ -47,9 +53,12 @@ export default function UsersAdminPage() {
   const getApiUrl = useCallback(() => {
     if (typeof window !== "undefined") {
       const host = window.location.hostname;
-      if (host === "localhost" || host === "127.0.0.1") return "http://localhost:8080/api";
+      if (host === "localhost" || host === "127.0.0.1") {
+        return "http://localhost:8080/api";
+      }
+      return `${window.location.origin.replace(/\/$/, "")}/api`;
     }
-    return "http://localhost:8080/api";
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
   }, []);
 
   // 검색 및 정렬

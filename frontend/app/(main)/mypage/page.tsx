@@ -9,21 +9,17 @@ import { useEffect, useState } from "react";
 export default function MyPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [tokenError, setTokenError] = useState(false);
-  const [hasToken, setHasToken] = useState(false);
-  
-  // 로그인 체크
+  const [hasToken] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !!localStorage.getItem('accessToken');
+  });
+
+  // 로그인 토큰 없으면 리다이렉션
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setTokenError(true);
-        router.replace('/login');
-      } else {
-        setHasToken(true);
-      }
+    if (!hasToken) {
+      router.replace('/login');
     }
-  }, [router]);
+  }, [hasToken, router]);
 
   const { data: userData, isLoading: loading, error: queryError } = useQuery({
     queryKey: ['mypage'],
@@ -35,13 +31,13 @@ export default function MyPage() {
       // API 호출 실패 시에도 로그인 페이지로 리다이렉션
       if (!res.success) {
         console.error('마이페이지 데이터 로드 실패:', res.error);
-        setTokenError(true);
         router.replace('/login');
       }
       return null;
     },
     enabled: hasToken,
     staleTime: 0, // 항상 최신 데이터 가져오기
+    retry: false,
   });
 
   const handleLogout = () => {
@@ -51,7 +47,7 @@ export default function MyPage() {
     router.push("/login");
   };
 
-  if (tokenError || (queryError && !loading)) {
+  if (!hasToken || (queryError && !loading)) {
     return (
       <main className="min-h-screen px-4 py-6 flex items-center justify-center">
         <div className="text-center">

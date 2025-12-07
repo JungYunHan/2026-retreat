@@ -42,9 +42,12 @@ export default function PostsAdminPage() {
   const getApiUrl = useCallback(() => {
     if (typeof window !== "undefined") {
       const host = window.location.hostname;
-      if (host === "localhost" || host === "127.0.0.1") return "http://localhost:8080/api";
+      if (host === "localhost" || host === "127.0.0.1") {
+        return "http://localhost:8080/api";
+      }
+      return `${window.location.origin.replace(/\/$/, "")}/api`;
     }
-    return "http://localhost:8080/api";
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
   }, []);
 
   // 검색 및 정렬

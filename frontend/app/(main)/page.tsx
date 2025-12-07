@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import HomeCarousel from "@/components/HomeCarousel";
 import { pageApi, type HomeData } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -59,17 +59,10 @@ function normalizeDish(value: unknown): { mainDish: string; sideDishes?: string 
 }
 
 export default function HomePage() {
-  const [storedUsername, setStoredUsername] = useState("사용자");
-
-  // 마운트 시 localStorage에서 사용자명 로드
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const username = localStorage.getItem('username');
-      if (username) {
-        setStoredUsername(username);
-      }
-    }
-  }, []);
+  const [storedUsername] = useState(() => {
+    if (typeof window === 'undefined') return "사용자";
+    return localStorage.getItem('username') || "사용자";
+  });
 
   const { data: homeData, isLoading } = useQuery({
     queryKey: ['home'],
@@ -169,7 +162,7 @@ export default function HomePage() {
               </p>
               <p className="text-gray-600 dark:text-gray-400 text-xs mb-3">에베소서 4:4-6</p>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                우리가 한 몸, 한 영, 한 주, 한 믿음, 한 세례로 모두 하나가 되어 "평안의 매는 줄"로 연결될 때, 
+                우리가 한 몸, 한 영, 한 주, 한 믿음, 한 세례로 모두 하나가 되어 &quot;평안의 매는 줄&quot;로 연결될 때,
                 성령의 하나 되심이 이루어집니다. 이번 동계 수련회에서 우리 모두 하나님의 사랑으로 하나 되기를 기도합니다.
               </p>
             </div>
