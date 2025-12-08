@@ -27,8 +27,14 @@ export default function AdminDashboard() {
   const loadStats = async () => {
     try {
       setLoading(true);
+      console.log("[Admin Dashboard] API 호출 시작 - /admin/stats");
+      console.log("[Admin Dashboard] 현재 origin:", typeof window !== 'undefined' ? window.location.origin : 'SSR');
+      
       const result = await apiClient.get<DashboardStats>(`/admin/stats`);
+      console.log("[Admin Dashboard] API 응답:", result);
+      
       if (result.success && result.data) {
+        console.log("[Admin Dashboard] 통계 데이터 로드 성공");
         const data = result.data as Partial<DashboardStats>;
         setStats({
           totalUsers: data.totalUsers ?? 0,
@@ -39,16 +45,18 @@ export default function AdminDashboard() {
           totalVehicles: data.totalVehicles ?? 0,
         });
       } else {
-        console.error("통계 로드 실패:", result.error || result.message);
+        console.error("[Admin Dashboard] 통계 로드 실패 - success: false");
+        console.error("[Admin Dashboard] 에러:", result.error || result.message);
       }
     } catch (error) {
-      console.error("통계 로드 실패:", error);
+      console.error("[Admin Dashboard] 통계 로드 중 예외 발생:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("[Admin Dashboard] 컴포넌트 마운트");
     loadStats();
   }, []);
 

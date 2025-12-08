@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import "./admin.css";
 
@@ -9,7 +9,10 @@ export default function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  useLayoutEffect(() => {
+  useEffect(() => {
+    // 클라이언트에서만 실행
+    if (typeof window === "undefined") return;
+    
     // data attribute 추가 (CSS에서 선택하기 위함)
     document.documentElement.setAttribute("data-admin", "true");
     document.body.setAttribute("data-admin", "true");
