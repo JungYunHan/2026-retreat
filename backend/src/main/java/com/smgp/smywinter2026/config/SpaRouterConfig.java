@@ -13,22 +13,30 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class SpaRouterConfig implements WebMvcConfigurer {
 
-    @Override
-    public void addViewControllers(@NonNull ViewControllerRegistry registry) {
-        // SPA 라우팅: 정의되지 않은 경로는 모두 index.html로 포워딩
-        // Spring Security와 Controller 이전에 매칭되도록 주의
-        // 예: /admin, /mypage, /login 등은 index.html로 → React Router가 처리
+        @Override
+        public void addViewControllers(@NonNull ViewControllerRegistry registry) {
+                // SPA 라우팅: 정의되지 않은 경로는 모두 index.html로 포워딩
+                // Spring Security와 Controller 이전에 매칭되도록 주의
+                // 예: /admin, /mypage, /login 등은 index.html로 → React Router가 처리
 
-        // 단일 세그먼트 경로 (예: /admin, /mypage)
-        registry.addViewController("/{path:[^\\.]+}")
-                .setViewName("forward:/index.html");
+                // 단일 세그먼트 경로 (예: /admin, /mypage)
+                // 먼저 `admin` 경로는 정적 파일 `admin.html`로 직접 포워드
+                // (Next.js static export가 생성한 admin.html을 서빙하기 위함)
+                registry.addViewController("/admin")
+                                .setViewName("forward:/admin.html");
+                registry.addViewController("/admin/{path:^(?!api$).*$}")
+                                .setViewName("forward:/admin.html");
 
-        // 다중 세그먼트 경로 (예: /admin/users, /mypage/edit)
-        registry.addViewController("/{path:[^\\.]+}/{subPath:[^\\.]+}")
-                .setViewName("forward:/index.html");
+                // 단일 세그먼트 경로 (예: /mypage 등) - admin은 위에서 처리
+                registry.addViewController("/{path:[^\\.]+}")
+                                .setViewName("forward:/index.html");
 
-        // 3단계 경로도 지원
-        registry.addViewController("/{path:[^\\.]+}/{subPath:[^\\.]+}/{subSubPath:[^\\.]+}")
-                .setViewName("forward:/index.html");
-    }
+                // 다중 세그먼트 경로 (예: /admin/users, /mypage/edit)
+                registry.addViewController("/{path:[^\\.]+}/{subPath:[^\\.]+}")
+                                .setViewName("forward:/index.html");
+
+                // 3단계 경로도 지원
+                registry.addViewController("/{path:[^\\.]+}/{subPath:[^\\.]+}/{subSubPath:[^\\.]+}")
+                                .setViewName("forward:/index.html");
+        }
 }
