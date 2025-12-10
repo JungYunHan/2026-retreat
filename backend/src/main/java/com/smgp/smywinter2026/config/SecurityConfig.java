@@ -4,6 +4,7 @@ import com.smgp.smywinter2026.jwt.JwtAuthenticationFilter;
 import com.smgp.smywinter2026.jwt.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -21,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +35,12 @@ import java.util.List;
 public class SecurityConfig {
 
         private final JwtTokenProvider jwtTokenProvider;
+
+        @Value("${app.cors.allowed-origins:http://localhost:3000,https://smy-winter-2026.onrender.com,https://2026-retreat.fly.dev}")
+        private String allowedOrigins;
+
+        @Value("${app.cors.allowed-origin-patterns:https://*.onrender.com}")
+        private String allowedOriginPatterns;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -57,24 +64,26 @@ public class SecurityConfig {
                                                 .authenticationEntryPoint((request, response, authException) -> {
                                                         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                                                         response.setStatus(401);
-                                                        
+
                                                         Map<String, Object> errorResponse = new HashMap<>();
                                                         errorResponse.put("success", false);
                                                         errorResponse.put("error", "인증이 필요합니다. 로그인해주세요.");
-                                                        
+
                                                         ObjectMapper mapper = new ObjectMapper();
-                                                        response.getWriter().write(mapper.writeValueAsString(errorResponse));
+                                                        response.getWriter().write(
+                                                                        mapper.writeValueAsString(errorResponse));
                                                 })
                                                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                                                         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                                                         response.setStatus(403);
-                                                        
+
                                                         Map<String, Object> errorResponse = new HashMap<>();
                                                         errorResponse.put("success", false);
                                                         errorResponse.put("error", "접근 권한이 없습니다.");
-                                                        
+
                                                         ObjectMapper mapper = new ObjectMapper();
-                                                        response.getWriter().write(mapper.writeValueAsString(errorResponse));
+                                                        response.getWriter().write(
+                                                                        mapper.writeValueAsString(errorResponse));
                                                 }))
 
                                 // 6. 요청별 인가 규칙 설정
@@ -113,13 +122,24 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-                // Next.js 개발 서버 주소 + Render 배포 URL 허용
-                configuration.setAllowedOrigins(List.of(
-                                "http://localhost:3000",
-                                "https://smy-winter-2026.onrender.com"));
+                // 환경변수로 전달된 도메인 목록을 콤마로 분리해 적용
+                List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                                .map(String::trim)
+                                .filter(origin -> !origin.isEmpty())
+                                .toList();
+
+                List<String> originPatterns = Arrays.stream(allowedOriginPatterns.split(","))
+                                .map(String::trim)
+                                .filter(pattern -> !pattern.isEmpty())
+                                .toList();
+
+                configuration.setAllowedOrigins(origins);
+                configuration.setAllowedOriginPatterns(originPatterns);
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
                 configuration.setAllowCredentials(true);
+                configuration.setExposedHeaders(List.of("Authorization"));
+                configuration.setMaxAge(3600L);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);

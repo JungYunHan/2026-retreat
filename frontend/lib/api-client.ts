@@ -1,10 +1,21 @@
 // API 클라이언트 유틸리티
-// 배포 환경에서는 같은 도메인의 /api를 사용, 로컬에서는 localhost:8080 사용
-const API_BASE_URL = typeof window !== 'undefined' 
-  ? (window.location.hostname === 'localhost' 
-      ? 'http://localhost:8080/api' 
-      : `${window.location.origin}/api`)
-  : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+// NEXT_PUBLIC_API_URL이 있으면 우선 사용, 없으면 로컬/동일 도메인으로 폴백
+const getApiBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && envUrl.trim().length > 0) {
+    return envUrl;
+  }
+
+  if (typeof window !== 'undefined') {
+    return window.location.hostname === 'localhost'
+      ? 'http://localhost:8080/api'
+      : `${window.location.origin}/api`;
+  }
+
+  return 'http://localhost:8080/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface ApiResponse<T> {
   success: boolean;
