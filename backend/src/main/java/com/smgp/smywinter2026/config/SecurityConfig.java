@@ -99,7 +99,7 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 // 공개 API 허용
                                                 .requestMatchers("/api/auth/login", "/api/home", "/api/schedules",
-                                                                "/api/health", "/api/ping")
+                                                                "/api/health", "/api/ping", "/ws/**")
                                                 .permitAll()
                                                 // 관리자 전용 API
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
