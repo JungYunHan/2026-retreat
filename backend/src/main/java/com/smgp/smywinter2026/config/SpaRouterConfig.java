@@ -39,6 +39,14 @@ public class SpaRouterConfig implements WebMvcConfigurer {
                 registry.addViewController("/admin/{path:^(?!api$).*$}")
                                 .setViewName("forward:/admin.html");
 
+                // 특정 경로를 전용 HTML로 포워딩
+                registry.addViewController("/game")
+                                .setViewName("forward:/game/index.html");
+                registry.addViewController("/login")
+                                .setViewName("forward:/login/index.html");
+                registry.addViewController("/mypage")
+                                .setViewName("forward:/mypage/index.html");
+
                 // 단일 세그먼트 경로 (예: /mypage 등) - admin은 위에서 처리
                 registry.addViewController("/{path:[^\\.]+}")
                                 .setViewName("forward:/index.html");

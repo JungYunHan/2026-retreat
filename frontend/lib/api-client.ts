@@ -1,15 +1,18 @@
 // API 클라이언트 유틸리티
 // NEXT_PUBLIC_API_URL이 있으면 우선 사용, 없으면 로컬/동일 도메인으로 폴백
 const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:8080/api';
+  }
+
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && envUrl.trim().length > 0) {
-    return envUrl;
+    // 환경 변수에 /api가 포함되어 있지 않으면 추가
+    return envUrl.trim().endsWith('/api') ? envUrl.trim() : `${envUrl.trim()}/api`;
   }
 
   if (typeof window !== 'undefined') {
-    return window.location.hostname === 'localhost'
-      ? 'http://localhost:8080/api'
-      : `${window.location.origin}/api`;
+    return `${window.location.origin}/api`;
   }
 
   return 'http://localhost:8080/api';

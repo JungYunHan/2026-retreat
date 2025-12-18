@@ -1,8 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import { pageApi, MyPageData } from '../../../lib/api';
+
+const getWsBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && envUrl.trim().length > 0) {
+    return envUrl.replace('/api', '/ws');
+  }
+
+  if (typeof window !== 'undefined') {
+    return window.location.hostname === 'localhost'
+      ? 'http://localhost:8080/ws'
+      : `${window.location.origin.replace(/^http/, 'ws')}/ws`;
+  }
+
+  return 'http://localhost:8080/ws';
+};
 
 interface Card {
   suit: string;
@@ -27,23 +44,56 @@ interface GameState {
 }
 
 export default function GamePage() {
+  const router = useRouter();
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [playerName, setPlayerName] = useState('');
   const [gameId, setGameId] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [hasJoinedGame, setHasJoinedGame] = useState(false);
+  const [userData, setUserData] = useState<MyPageData | null>(null);
+
+  useEffect(() => {
+    // 토큰 확인: 없으면 바로 리다이렉트
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) {
+      console.log('토큰 없음, 로그인 페이지로 리다이렉트');
+      router.push('/login?redirect=/game');
+      return;
+    }
+
+    // 사용자 정보 가져오기
+    const fetchUserData = async () => {
+      try {
+        const response = await pageApi.getMyPageData();
+        console.log('API 응답:', response);
+        if (response.success && response.data) {
+          setUserData(response.data);
+          setPlayerName(response.data.name); // 로그인한 사용자의 이름으로 설정
+        } else {
+          console.log('로그인 필요, 리다이렉트');
+          router.push('/login?redirect=/game');
+        }
+      } catch (error) {
+        console.error('사용자 정보 가져오기 실패:', error);
+        console.log('에러 발생, 리다이렉트');
+        router.push('/login?redirect=/game');
+      }
+    };
+    fetchUserData();
+  }, [router]);
 
   useEffect(() => {
     const tabId = Math.random().toString(36).substr(2, 9);
     console.log(`🚀 [탭 ${tabId}] 게임 페이지 로드`);
 
-    const socket = new SockJS('http://localhost:8080/ws');
+    const socket = new SockJS(getWsBaseUrl());
     const client = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
         console.log(`🟢 [탭 ${tabId}] WebSocket 연결 성공`);
         setIsConnected(true);
+        setStompClient(client);
 
         // 게임 상태 구독
         client.subscribe('/topic/game', (message) => {
@@ -71,7 +121,6 @@ export default function GamePage() {
     });
 
     client.activate();
-    setStompClient(client);
 
     return () => {
       console.log(`🗑️ [탭 ${tabId}] 컴포넌트 언마운트`);
@@ -80,12 +129,12 @@ export default function GamePage() {
   }, []);
 
   const startGame = () => {
-    if (stompClient && stompClient.connected && playerName.trim() && gameId.trim()) {
+    if (stompClient && stompClient.connected && userData && gameId.trim()) {
       console.log(`🎮 [${playerName}] 게임 시작 요청: gameId=${gameId}, playerName=${playerName}`);
       console.log(`🔍 현재 연결 상태:`, {
         connected: stompClient.connected,
-        sessionId: (stompClient as any).sessionId || 'unknown',
-        url: 'ws://localhost:8080/ws'
+        sessionId: (stompClient as Client & { sessionId?: string }).sessionId || 'unknown',
+        url: getWsBaseUrl()
       });
       setHasJoinedGame(true); // 게임 참여 상태 설정
       stompClient.publish({
@@ -99,7 +148,7 @@ export default function GamePage() {
       console.log(`❌ [${playerName}] 게임 시작 실패:`, {
         stompClient: !!stompClient,
         connected: stompClient?.connected,
-        playerName: playerName.trim(),
+        userData: !!userData,
         gameId: gameId.trim()
       });
     }
@@ -256,18 +305,19 @@ export default function GamePage() {
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">게임 시작</h2>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  플레이어 이름
-                </label>
-                <input
-                  type="text"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="이름을 입력하세요"
-                />
-              </div>
+              {userData && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    플레이어 이름
+                  </label>
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+                    {userData.name}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    💡 로그인한 사용자의 이름으로 참여합니다
+                  </p>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   게임 ID <span className="text-red-500">*</span>
@@ -285,7 +335,7 @@ export default function GamePage() {
               </div>
               <button
                 onClick={startGame}
-                disabled={!isConnected || !playerName.trim() || !gameId.trim()}
+                disabled={!isConnected || !userData || !gameId.trim()}
                 className="w-full px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-lg font-semibold"
               >
                 게임 시작 🎮
@@ -532,7 +582,7 @@ function GuessingPhase({ gameState, playerName, onDrawWord, onGuess, onSelectWor
         <div className="text-center">
           <div className="mb-6">
             <h3 className="text-3xl font-bold text-gray-800 mb-2">
-              "{gameState.currentWord}"
+              {gameState.currentWord}
             </h3>
             <p className="text-gray-600">
               이 단어를 누가 썼을까요? (남은 기회: {gameState.guessAttempts})

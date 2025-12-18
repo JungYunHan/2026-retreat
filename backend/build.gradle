@@ -65,7 +65,7 @@ test {
 // Next.js 빌드 통합 스크립트
 // ===================================================
 
-def frontendDir = "$projectDir/../frontEnd"
+def frontendDir = "$projectDir/../frontend"
 def skipFrontend = project.hasProperty('skipFrontend') || System.getProperty('skipFrontend') == 'true'
 
 sourceSets {
@@ -112,14 +112,14 @@ task buildFrontend(type: Exec) {
 	}
 }
 
-// 3. 빌드 결과물(out 폴더)을 Spring Boot static 폴더로 복사
+// 3. 빌드 결과물(out 폴더)을 Spring Boot templates 폴더로 복사 (SPA 라우팅용)
 task copyFrontendToBuild(type: Copy) {
 	onlyIf { !skipFrontend }
 	dependsOn "buildFrontend"
 	from "$frontendDir/out"
-	into "$projectDir/src/main/resources/static"
+	into "$projectDir/src/main/resources/templates"
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
-	outputs.dir "$projectDir/src/main/resources/static"
+	outputs.dir "$projectDir/src/main/resources/templates"
 }
 
 // bootRun 할 때도 프론트엔드 자동 반영 (skipFrontend 설정 시 건너뜀)

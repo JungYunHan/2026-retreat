@@ -1,23 +1,35 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
 import { useMutation } from '@tanstack/react-query';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [redirect, setRedirect] = useState('/mypage');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    // 클라이언트 사이드에서만 실행
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectParam = urlParams.get('redirect');
+      if (redirectParam) {
+        setRedirect(redirectParam);
+      }
+    }
+  }, []);
 
   const loginMutation = useMutation({
     mutationFn: (credentials: { username: string; password: string }) =>
       authApi.login(credentials),
     onSuccess: (response) => {
       if (response.success) {
-        // 로그인 성공 후 마이페이지로 이동
-        router.replace('/mypage');
+        // 로그인 성공 후 redirect 경로로 이동
+        router.replace(redirect);
       } else {
         setError(response.error || '로그인에 실패했습니다.');
       }

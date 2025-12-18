@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+
+  // Next.js export 모드에서 app 라우터의 클라이언트 라우팅을 위해 trailingSlash 추가
+  trailingSlash: true,
 };
 
 export default nextConfig;

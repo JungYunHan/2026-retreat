@@ -95,7 +95,7 @@ public class SecurityConfig {
                                                                 "/_not-found/**",
                                                                 "/css/**", "/_next/**",
                                                                 "*.js", "*.css", "*.svg", "*.png", "*.jpg", "*.ico",
-                                                                "*.webp")
+                                                                "*.webp", "/.well-known/**")
                                                 .permitAll()
                                                 // 공개 API 허용
                                                 .requestMatchers("/api/auth/login", "/api/home", "/api/schedules",
