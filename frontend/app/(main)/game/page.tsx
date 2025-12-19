@@ -9,13 +9,18 @@ import { pageApi, MyPageData } from '../../../lib/api';
 const getWsBaseUrl = () => {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && envUrl.trim().length > 0) {
-    return envUrl.replace('/api', '/ws');
+    // API URL에서 /api를 /ws로 바꾸고, 스킴은 http(s) 그대로 유지 (SockJS는 ws/wss가 아님)
+    const sockJsUrl = envUrl.replace('/api', '/ws');
+    return sockJsUrl;
   }
 
   if (typeof window !== 'undefined') {
-    return window.location.hostname === 'localhost'
-      ? 'http://localhost:8080/ws'
-      : `${window.location.origin.replace(/^http/, 'ws')}/ws`;
+    if (window.location.hostname === 'localhost') {
+      return 'http://localhost:8080/ws';
+    } else {
+      // 배포 환경: origin이 https면 https, 아니면 http 그대로
+      return `${window.location.origin.replace(/\/$/, '')}/ws`;
+    }
   }
 
   return 'http://localhost:8080/ws';
