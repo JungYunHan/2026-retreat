@@ -107,7 +107,7 @@ spring:
   # JPA (PostgreSQL용)
   jpa:
     hibernate:
-      ddl-auto: validate # [중요] 운영에서는 자동 변경(update) 대신 검증(validate)
+      ddl-auto: update # 첫 배포 시 테이블 자동 생성 (안정화 후 validate로 변경 권장)
     show-sql: false # 운영에서는 SQL 로그 비활성화 (성능)
     properties:
       hibernate:
