@@ -26,8 +26,12 @@ steps:
       - '--region=asia-northeast3'
       - '--platform=managed'
       - '--allow-unauthenticated'
-      - '--add-cloudsql-instances=${_CLOUD_SQL_INSTANCE}'
-      - '--set-env-vars=SPRING_PROFILES_ACTIVE=prod,DB_URL=${_DB_URL},DB_USERNAME=${_DB_USERNAME},DB_PASSWORD=${_DB_PASSWORD},JWT_SECRET=${_JWT_SECRET}'
+      - '--add-cloudsql-instances=$_CLOUD_SQL_INSTANCE'
+      - '--set-env-vars=SPRING_PROFILES_ACTIVE=prod'
+      - '--set-env-vars=DB_URL=$_DB_URL'
+      - '--set-env-vars=DB_USERNAME=$_DB_USERNAME'
+      - '--set-env-vars=DB_PASSWORD=$_DB_PASSWORD'
+      - '--set-env-vars=JWT_SECRET=$_JWT_SECRET'
 
 images:
   - 'gcr.io/$PROJECT_ID/dongsu-2026'
