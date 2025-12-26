@@ -1,0 +1,36 @@
+steps:
+  # 1. Docker 이미지 빌드
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/dongsu-2026'
+      - '-f'
+      - 'backend/Dockerfile'
+      - '.'
+
+  # 2. Container Registry에 푸시
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/dongsu-2026'
+
+  # 3. Cloud Run에 배포 (환경 변수 포함)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'dongsu-2026'
+      - '--image=gcr.io/$PROJECT_ID/dongsu-2026'
+      - '--region=asia-northeast3'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--add-cloudsql-instances=${_CLOUD_SQL_INSTANCE}'
+      - '--set-env-vars=SPRING_PROFILES_ACTIVE=prod,DB_URL=${_DB_URL},DB_USERNAME=${_DB_USERNAME},DB_PASSWORD=${_DB_PASSWORD},JWT_SECRET=${_JWT_SECRET}'
+
+images:
+  - 'gcr.io/$PROJECT_ID/dongsu-2026'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
