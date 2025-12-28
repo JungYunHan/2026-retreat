@@ -15,7 +15,7 @@ RUN npm install
 COPY ./frontend/ ./
 
 # Build Next.js and export static files (out/)
-RUN npm run build && npm run export
+RUN npm run build
 
 # =================================================
 # Stage 2: Build Spring Boot with Gradle

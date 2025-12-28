@@ -25,13 +25,17 @@ steps:
       - '--image=gcr.io/$PROJECT_ID/dongsu-2026'
       - '--region=asia-northeast3'
       - '--platform=managed'
+      - '--port=$_PORT'
       - '--allow-unauthenticated'
       - '--add-cloudsql-instances=$_CLOUD_SQL_INSTANCE'
-      - '--set-env-vars=SPRING_PROFILES_ACTIVE=prod'
+      - '--set-env-vars=SPRING_PROFILES_ACTIVE=$_SPRING_PROFILES_ACTIVE'
+      - '--set-env-vars=SERVER_PORT=$_PORT'
       - '--set-env-vars=DB_URL=$_DB_URL'
       - '--set-env-vars=DB_USERNAME=$_DB_USERNAME'
       - '--set-env-vars=DB_PASSWORD=$_DB_PASSWORD'
       - '--set-env-vars=JWT_SECRET=$_JWT_SECRET'
+      - '--set-env-vars=JWT_EXPIRATION_MS=$_JWT_EXPIRATION_MS'
+      - '--set-env-vars=APP_CORS_ALLOWED_ORIGINS=$_APP_CORS_ALLOWED_ORIGINS'
 
 images:
   - 'gcr.io/$PROJECT_ID/dongsu-2026'
